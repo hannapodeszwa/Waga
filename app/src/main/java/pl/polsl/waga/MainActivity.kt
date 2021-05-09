@@ -7,15 +7,28 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.graphics.Bitmap
+import android.graphics.ImageFormat
+import android.graphics.SurfaceTexture
+import android.hardware.camera2.*
+import android.media.Image
+import android.media.ImageReader
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
+import android.os.Handler
+import android.os.HandlerThread
 import android.provider.MediaStore
 
 import android.util.Log
+import android.util.Size
+import android.util.SparseIntArray
+import android.view.Surface
+import android.view.TextureView
 import android.view.View
+import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.core.content.FileProvider
 import com.google.firebase.ml.vision.FirebaseVision
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
@@ -24,9 +37,8 @@ import com.google.firebase.ml.vision.objects.FirebaseVisionObject
 import com.google.firebase.ml.vision.objects.FirebaseVisionObjectDetectorOptions
 
 import kotlinx.android.synthetic.main.activity_main.*
+import java.io.*
 
-import java.io.File
-import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -43,113 +55,490 @@ class MainActivity : AppCompatActivity() {
         WRITE_DATA
     }
 
+//    override fun onCreate(savedInstanceState: Bundle?) {
+//        super.onCreate(savedInstanceState)
+//        setContentView(R.layout.activity_main)
+//
+//        checkAndRequestPermissionsFor(arrayListOf(UserPermission.CAMERA, UserPermission.WRITE_DATA))
+//    }
+//
+//    override fun onResume() {
+//        super.onResume()
+//    }
+//
+//    override fun onPause() {
+//        super.onPause()
+//    }
+
+
+
+
+
+
+    private var count = 0
+
+    private var textureView: TextureView? = null
+
+    companion object {
+        private const val TAG = "AndroidCameraApi"
+        private val ORIENTATIONS = SparseIntArray()
+        private const val REQUEST_CAMERA_PERMISSION = 200
+
+        init {
+            ORIENTATIONS.append(Surface.ROTATION_0, 90)
+            ORIENTATIONS.append(Surface.ROTATION_90, 0)
+            ORIENTATIONS.append(Surface.ROTATION_180, 270)
+            ORIENTATIONS.append(Surface.ROTATION_270, 180)
+        }
+    }
+
+    lateinit var cameraId: String
+    protected var cameraDevice: CameraDevice? = null
+    protected var cameraCaptureSessions: CameraCaptureSession? = null
+    protected var captureRequestBuilder: CaptureRequest.Builder? = null
+    private var imageDimension: Size? = null
+    private var imageReader: ImageReader? = null
+    private val file: File? = null
+    private var mBackgroundHandler: Handler? = null
+    private var mBackgroundThread: HandlerThread? = null
+    private var isProcessing: Boolean = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        textureView = findViewById<View>(R.id.texture) as TextureView
+        assert(textureView != null)
+        textureView!!.surfaceTextureListener = textureListener
+        //takePictureButton = findViewById<View>(R.id.btn_takepicture) as Button
+        //assert(takePictureButton != null)
+        //takePictureButton!!.setOnClickListener { takePicture() }
 
-        checkAndRequestPermissionsFor(arrayListOf(UserPermission.CAMERA, UserPermission.WRITE_DATA))
+    }
+
+    var textureListener: TextureView.SurfaceTextureListener = object :
+        TextureView.SurfaceTextureListener {
+        override fun onSurfaceTextureAvailable(surface: SurfaceTexture, width: Int, height: Int) {
+            //open your camera here
+            openCamera()
+        }
+
+        override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture, width: Int, height: Int) {
+            // Transform you image captured size according to the surface width and height
+        }
+
+        override fun onSurfaceTextureDestroyed(surface: SurfaceTexture): Boolean {
+            return false
+        }
+
+        override fun onSurfaceTextureUpdated(texture: SurfaceTexture) {
+            // Start changes
+            // Get the bitmap
+            val frame = Bitmap.createBitmap(textureView!!.width, textureView!!.height, Bitmap.Config.ARGB_8888)
+            textureView?.getBitmap(frame)
+
+
+
+            // Do whatever you like with the frame
+            //frameProcessor?.processFrame(frame)
+            count++;
+
+            //if(!isProcessing) {
+            //    isProcessing = true
+            //    decodeImage(frame)
+            //    isProcessing = false
+            //}
+
+            // End changes
+        }
+    }
+
+    private val stateCallback: CameraDevice.StateCallback = object : CameraDevice.StateCallback() {
+        override fun onOpened(camera: CameraDevice) {
+            //This is called when the camera is open
+            Log.e(TAG, "onOpened")
+            cameraDevice = camera
+            createCameraPreview()
+        }
+
+        override fun onDisconnected(camera: CameraDevice) {
+            cameraDevice!!.close()
+        }
+
+        override fun onError(camera: CameraDevice, error: Int) {
+            cameraDevice!!.close()
+            cameraDevice = null
+        }
+    }
+    val captureCallbackListener: CameraCaptureSession.CaptureCallback = object : CameraCaptureSession.CaptureCallback() {
+        override fun onCaptureCompleted(
+            session: CameraCaptureSession,
+            request: CaptureRequest,
+            result: TotalCaptureResult
+        ) {
+            super.onCaptureCompleted(session, request, result)
+            Toast.makeText(this@MainActivity, "Saved:$file", Toast.LENGTH_SHORT).show()
+            createCameraPreview()
+        }
+    }
+
+    protected fun startBackgroundThread() {
+        mBackgroundThread = HandlerThread("Camera Background")
+        mBackgroundThread!!.start()
+        mBackgroundHandler = Handler(mBackgroundThread!!.looper)
+    }
+
+    protected fun stopBackgroundThread() {
+        mBackgroundThread!!.quitSafely()
+        try {
+            mBackgroundThread!!.join()
+            mBackgroundThread = null
+            mBackgroundHandler = null
+        } catch (e: InterruptedException) {
+            e.printStackTrace()
+        }
+    }
+
+    protected fun takePicture() {
+        if (null == cameraDevice) {
+            Log.e(TAG, "cameraDevice is null")
+            return
+        }
+        val manager = getSystemService(CAMERA_SERVICE) as CameraManager
+        try {
+            val characteristics = manager.getCameraCharacteristics(
+                cameraDevice!!.id
+            )
+            var jpegSizes: Array<Size>? = null
+            if (characteristics != null) {
+                jpegSizes =
+                    characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)!!
+                        .getOutputSizes(ImageFormat.JPEG)
+            }
+            var width = 640
+            var height = 480
+            if (jpegSizes != null && 0 < jpegSizes.size) {
+                width = jpegSizes[0].width
+                height = jpegSizes[0].height
+            }
+            val reader = ImageReader.newInstance(width, height, ImageFormat.JPEG, 1)
+            val outputSurfaces: MutableList<Surface> = ArrayList(2)
+            outputSurfaces.add(reader.surface)
+            outputSurfaces.add(Surface(textureView!!.surfaceTexture))
+            val captureBuilder =
+                cameraDevice!!.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE)
+            captureBuilder.addTarget(reader.surface)
+            captureBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO)
+            // Orientation
+            val rotation = windowManager.defaultDisplay.rotation
+            captureBuilder.set(
+                CaptureRequest.JPEG_ORIENTATION,
+                ORIENTATIONS[rotation]
+            )
+            val file = File(Environment.getExternalStorageDirectory().toString() + "/pic.jpg")
+            val readerListener: ImageReader.OnImageAvailableListener = object :
+                ImageReader.OnImageAvailableListener {
+                override fun onImageAvailable(reader: ImageReader) {
+                    var image: Image? = null
+                    try {
+                        image = reader.acquireLatestImage()
+                        val buffer = image.planes[0].buffer
+                        val bytes = ByteArray(buffer.capacity())
+                        buffer[bytes]
+                        save(bytes)
+                    } catch (e: FileNotFoundException) {
+                        e.printStackTrace()
+                    } catch (e: IOException) {
+                        e.printStackTrace()
+                    } finally {
+                        image?.close()
+                    }
+                }
+
+                @Throws(IOException::class)
+                private fun save(bytes: ByteArray) {
+                    var output: OutputStream? = null
+                    try {
+                        output = FileOutputStream(file)
+                        output.write(bytes)
+                    } finally {
+                        output?.close()
+                    }
+                }
+            }
+            reader.setOnImageAvailableListener(readerListener, mBackgroundHandler)
+            val captureListener: CameraCaptureSession.CaptureCallback = object : CameraCaptureSession.CaptureCallback() {
+                override fun onCaptureCompleted(
+                    session: CameraCaptureSession,
+                    request: CaptureRequest,
+                    result: TotalCaptureResult
+                ) {
+                    super.onCaptureCompleted(session, request, result)
+                    Toast.makeText(this@MainActivity, "Saved:$file", Toast.LENGTH_SHORT).show()
+                    createCameraPreview()
+                }
+            }
+            cameraDevice!!.createCaptureSession(
+                outputSurfaces,
+                object : CameraCaptureSession.StateCallback() {
+                    override fun onConfigured(session: CameraCaptureSession) {
+                        try {
+                            session.capture(
+                                captureBuilder.build(),
+                                captureListener,
+                                mBackgroundHandler
+                            )
+                        } catch (e: CameraAccessException) {
+                            e.printStackTrace()
+                        }
+                    }
+
+                    override fun onConfigureFailed(session: CameraCaptureSession) {}
+                },
+                mBackgroundHandler
+            )
+        } catch (e: CameraAccessException) {
+            e.printStackTrace()
+        }
+    }
+
+    protected fun createCameraPreview() {
+        try {
+            val texture = textureView!!.surfaceTexture!!
+            texture.setDefaultBufferSize(imageDimension!!.width, imageDimension!!.height)
+            val surface = Surface(texture)
+            captureRequestBuilder =
+                cameraDevice!!.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
+            captureRequestBuilder!!.addTarget(surface)
+            cameraDevice!!.createCaptureSession(
+                Arrays.asList(surface),
+                object : CameraCaptureSession.StateCallback() {
+                    override fun onConfigured(cameraCaptureSession: CameraCaptureSession) {
+                        //The camera is already closed
+                        if (null == cameraDevice) {
+                            return
+                        }
+                        // When the session is ready, we start displaying the preview.
+                        cameraCaptureSessions = cameraCaptureSession
+                        updatePreview()
+                    }
+
+                    override fun onConfigureFailed(cameraCaptureSession: CameraCaptureSession) {
+                        Toast.makeText(
+                            this@MainActivity,
+                            "Configuration change",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                },
+                null
+            )
+        } catch (e: CameraAccessException) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun openCamera() {
+        val manager = getSystemService(CAMERA_SERVICE) as CameraManager
+        Log.e(TAG, "is camera open")
+        try {
+            cameraId = manager.cameraIdList[0]
+            val characteristics = manager.getCameraCharacteristics(cameraId)
+            val map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)!!
+            imageDimension = map.getOutputSizes(SurfaceTexture::class.java)[0]
+            // Add permission for camera and let user grant the permission
+            if (ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.CAMERA
+                ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                ActivityCompat.requestPermissions(
+                    this@MainActivity,
+                    arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                    REQUEST_CAMERA_PERMISSION
+                )
+                return
+            }
+            manager.openCamera(cameraId, stateCallback, null)
+        } catch (e: CameraAccessException) {
+            e.printStackTrace()
+        }
+        Log.e(TAG, "openCamera X")
+    }
+
+    protected fun updatePreview() {
+        if (null == cameraDevice) {
+            Log.e(TAG, "updatePreview error, return")
+        }
+        captureRequestBuilder!!.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO)
+        try {
+            cameraCaptureSessions!!.setRepeatingRequest(
+                captureRequestBuilder!!.build(),
+                null,
+                mBackgroundHandler
+            )
+        } catch (e: CameraAccessException) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun closeCamera() {
+        if (null != cameraDevice) {
+            cameraDevice!!.close()
+            cameraDevice = null
+        }
+        if (null != imageReader) {
+            imageReader!!.close()
+            imageReader = null
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
+        if (requestCode == REQUEST_CAMERA_PERMISSION) {
+            if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
+                // close the app
+                Toast.makeText(
+                    this@MainActivity,
+                    "Sorry!!!, you can't use this app without granting permission",
+                    Toast.LENGTH_LONG
+                ).show()
+                finish()
+            }
+        }
     }
 
     override fun onResume() {
         super.onResume()
+        Log.e(TAG, "onResume")
+        startBackgroundThread()
+        if (textureView!!.isAvailable) {
+            openCamera()
+        } else {
+            textureView!!.surfaceTextureListener = textureListener
+        }
     }
 
     override fun onPause() {
+        Log.e(TAG, "onPause")
+        //closeCamera();
+        stopBackgroundThread()
         super.onPause()
     }
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == Activity.RESULT_OK) {
 
-            // Once the image is captured, get it from the saved location
-            val f = File(mCurrentPhotoPath)
-            val contentUri = Uri.fromFile(f)
 
-            if (getBitmapFromUri(contentUri) != null){
-                selectedImage = getBitmapFromUri(contentUri)!!
-            }
-            snapShotView.setImageBitmap(selectedImage)
-        }
-    }
 
-    fun takePicture(view: View){
 
-        clearLabel()
-        dispatchTakePictureIntent()
-    }
 
-    private fun dispatchTakePictureIntent() {
-        val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-        if (takePictureIntent.resolveActivity(packageManager) != null) {
-            var photoFile:File? = null
 
-            try {
-                //TODO: Clean job to clear all the used images
-                photoFile = createImageFile()
-            }catch (ex: IOException){
 
-            }
 
-            if (photoFile != null) {
-                photoURI = FileProvider.getUriForFile(
-                    this,
-                    "pl.polsl.waga",
-                    photoFile
-                )
-                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
-                startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE)
-            }
-        }
-    }
 
-    @Throws(IOException::class)
-    private fun createImageFile(): File {
-        // Create an image file name
-        val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
-        val imageFileName = "JPEG_" + timeStamp + "_"
-        val storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-        val image = File.createTempFile(
-            imageFileName, /* prefix */
-            ".jpg", /* suffix */
-            storageDir      /* directory */
-        )
 
-        // Save a file: path for use with ACTION_VIEW intents
-        mCurrentPhotoPath = image.getAbsolutePath()
-        return image
-    }
 
-    private fun getBitmapFromUri(filePath: Uri): Bitmap? {
-        var bitmap:Bitmap? = null
-        try{
-            var tempBitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, filePath)
-            bitmap = updateImage(tempBitmap)
-        }catch (ex: IOException){
 
-        }
-        return bitmap
-    }
 
-    private fun updateImage(bitmap: Bitmap): Bitmap{
 
-        val isLandScape = (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE)
-        var scaledImageWidth = 0.0
-        var scaledImageHeight = 0.0
 
-        when (isLandScape){
 
-            (true)->{
-                scaledImageHeight = snapShotView.height.toDouble()
-                scaledImageWidth = bitmap.width.toDouble() * scaledImageHeight / bitmap.height.toDouble()
-            }
-            (false)->{
-                scaledImageWidth = snapShotView.width.toDouble()
-                scaledImageHeight = bitmap.height.toDouble() * scaledImageWidth / bitmap.width.toDouble()
-            }
-        }
-        val resizedBitmap = Bitmap.createScaledBitmap(bitmap,scaledImageWidth.toInt(),scaledImageHeight.toInt(),true)
 
-        return resizedBitmap
-    }
+//    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+//        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == Activity.RESULT_OK) {
+//
+//            // Once the image is captured, get it from the saved location
+//            val f = File(mCurrentPhotoPath)
+//            val contentUri = Uri.fromFile(f)
+//
+//            if (getBitmapFromUri(contentUri) != null){
+//                selectedImage = getBitmapFromUri(contentUri)!!
+//            }
+//            snapShotView.setImageBitmap(selectedImage)
+//        }
+//    }
+//
+//    fun takePicture(view: View){
+//
+//        clearLabel()
+//        dispatchTakePictureIntent()
+//    }
+//
+//    private fun dispatchTakePictureIntent() {
+//        val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+//        if (takePictureIntent.resolveActivity(packageManager) != null) {
+//            var photoFile:File? = null
+//
+//            try {
+//                //TODO: Clean job to clear all the used images
+//                photoFile = createImageFile()
+//            }catch (ex: IOException){
+//
+//            }
+//
+//            if (photoFile != null) {
+//                photoURI = FileProvider.getUriForFile(
+//                    this,
+//                    "pl.polsl.waga",
+//                    photoFile
+//                )
+//                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
+//                startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE)
+//            }
+//        }
+//    }
+//
+//    @Throws(IOException::class)
+//    private fun createImageFile(): File {
+//        // Create an image file name
+//        val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
+//        val imageFileName = "JPEG_" + timeStamp + "_"
+//        val storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+//        val image = File.createTempFile(
+//            imageFileName, /* prefix */
+//            ".jpg", /* suffix */
+//            storageDir      /* directory */
+//        )
+//
+//        // Save a file: path for use with ACTION_VIEW intents
+//        mCurrentPhotoPath = image.getAbsolutePath()
+//        return image
+//    }
+//
+//    private fun getBitmapFromUri(filePath: Uri): Bitmap? {
+//        var bitmap:Bitmap? = null
+//        try{
+//            var tempBitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, filePath)
+//            bitmap = updateImage(tempBitmap)
+//        }catch (ex: IOException){
+//
+//        }
+//        return bitmap
+//    }
+//
+//    private fun updateImage(bitmap: Bitmap): Bitmap{
+//
+//        val isLandScape = (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE)
+//        var scaledImageWidth = 0.0
+//        var scaledImageHeight = 0.0
+//
+//        when (isLandScape){
+//
+//            (true)->{
+//                scaledImageHeight = snapShotView.height.toDouble()
+//                scaledImageWidth = bitmap.width.toDouble() * scaledImageHeight / bitmap.height.toDouble()
+//            }
+//            (false)->{
+//                scaledImageWidth = snapShotView.width.toDouble()
+//                scaledImageHeight = bitmap.height.toDouble() * scaledImageWidth / bitmap.width.toDouble()
+//            }
+//        }
+//        val resizedBitmap = Bitmap.createScaledBitmap(bitmap,scaledImageWidth.toInt(),scaledImageHeight.toInt(),true)
+//
+//        return resizedBitmap
+//    }
 
 
 
@@ -164,13 +553,13 @@ class MainActivity : AppCompatActivity() {
      *
      */
     // https://firebase.google.com/docs/ml-kit/android/label-images
-    fun decodeImage(view: View){
+    //fun decodeImage(view: View){
 
-        decodeImage()
-    }
+    //    decodeImage()
+    //}
 
-    private fun decodeImage(){
-        val img = selectedImage?.let { it } ?: kotlin.run { return }
+    private fun decodeImage(img: Bitmap){
+        //val img = selectedImage?.let { it } ?: kotlin.run { return }
         val image = FirebaseVisionImage.fromBitmap(img)
 
         val options = FirebaseVisionObjectDetectorOptions.Builder()
@@ -198,7 +587,7 @@ class MainActivity : AppCompatActivity() {
          detector.processImage(image)
                  .addOnSuccessListener {
                      // Task completed successfully
-                     Toast.makeText(baseContext, "Cos jest",
+                     Toast.makeText(baseContext, "Cos jest: " + count,
                              Toast.LENGTH_SHORT).show()
                      setValuesToTextView(it)
                  }
