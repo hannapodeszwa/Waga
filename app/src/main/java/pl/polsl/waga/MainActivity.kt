@@ -37,10 +37,12 @@ import com.google.firebase.ml.vision.objects.FirebaseVisionObject
 import com.google.firebase.ml.vision.objects.FirebaseVisionObjectDetectorOptions
 
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.coroutines.*
 import java.io.*
 
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.concurrent.thread
 
 class MainActivity : AppCompatActivity() {
 
@@ -101,7 +103,8 @@ class MainActivity : AppCompatActivity() {
     private val file: File? = null
     private var mBackgroundHandler: Handler? = null
     private var mBackgroundThread: HandlerThread? = null
-    private var isProcessing: Boolean = false
+    private data class referenceBool (var value: Boolean)
+    private var isProcessing : referenceBool = referenceBool(false)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -141,15 +144,27 @@ class MainActivity : AppCompatActivity() {
             //frameProcessor?.processFrame(frame)
             count++;
 
-            //if(!isProcessing) {
-            //    isProcessing = true
-            //    decodeImage(frame)
-            //    isProcessing = false
-            //}
+            if(isProcessing.value == false) {
+                isProcessing.value = true
+                thread {
+                    decodeImage(frame)
+                    isProcessing.value = false
+                }
 
+
+                //val promise = launch(CommonPool1) {
+                //    asyncDecode(frame,isProcessing)
+                //}
+            }
             // End changes
         }
     }
+
+    suspend private fun asyncDecode(frame: Bitmap, isProcessing: referenceBool) {
+        decodeImage(frame)
+        isProcessing.value = false
+    }
+
 
     private val stateCallback: CameraDevice.StateCallback = object : CameraDevice.StateCallback() {
         override fun onOpened(camera: CameraDevice) {
