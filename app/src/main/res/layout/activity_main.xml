@@ -10,18 +10,23 @@
 
     <TextureView
         android:id="@+id/texture"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_width="411dp"
+        android:layout_height="549dp"
         android:layout_alignParentTop="true"
         app:layout_constraintBottom_toTopOf="@+id/imageLabel"
-        tools:layout_editor_absoluteX="0dp" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
 
     <TextView
         android:id="@+id/imageLabel"
-        android:layout_width="336dp"
-        android:layout_height="326dp"
+        android:layout_width="331dp"
+        android:layout_height="160dp"
         android:layout_marginStart="38dp"
         android:layout_marginEnd="38dp"
+        android:layout_marginBottom="4dp"
         android:text="TextView"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

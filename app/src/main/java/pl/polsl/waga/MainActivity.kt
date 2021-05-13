@@ -135,8 +135,6 @@ class MainActivity : AppCompatActivity() {
         override fun onSurfaceTextureUpdated(texture: SurfaceTexture) {
             // Start changes
             // Get the bitmap
-            val frame = Bitmap.createBitmap(textureView!!.width, textureView!!.height, Bitmap.Config.ARGB_8888)
-            textureView?.getBitmap(frame)
 
 
 
@@ -147,8 +145,9 @@ class MainActivity : AppCompatActivity() {
             if(isProcessing.value == false) {
                 isProcessing.value = true
                 thread {
-                    decodeImage(frame)
-                    isProcessing.value = false
+                    val frame = Bitmap.createBitmap(textureView!!.width, textureView!!.height, Bitmap.Config.ARGB_8888)
+                    textureView?.getBitmap(frame)
+                    decodeImage(frame,isProcessing)
                 }
 
 
@@ -161,7 +160,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     suspend private fun asyncDecode(frame: Bitmap, isProcessing: referenceBool) {
-        decodeImage(frame)
+        //decodeImage(frame)
         isProcessing.value = false
     }
 
@@ -183,17 +182,6 @@ class MainActivity : AppCompatActivity() {
             cameraDevice = null
         }
     }
-    val captureCallbackListener: CameraCaptureSession.CaptureCallback = object : CameraCaptureSession.CaptureCallback() {
-        override fun onCaptureCompleted(
-            session: CameraCaptureSession,
-            request: CaptureRequest,
-            result: TotalCaptureResult
-        ) {
-            super.onCaptureCompleted(session, request, result)
-            Toast.makeText(this@MainActivity, "Saved:$file", Toast.LENGTH_SHORT).show()
-            createCameraPreview()
-        }
-    }
 
     protected fun startBackgroundThread() {
         mBackgroundThread = HandlerThread("Camera Background")
@@ -208,109 +196,6 @@ class MainActivity : AppCompatActivity() {
             mBackgroundThread = null
             mBackgroundHandler = null
         } catch (e: InterruptedException) {
-            e.printStackTrace()
-        }
-    }
-
-    protected fun takePicture() {
-        if (null == cameraDevice) {
-            Log.e(TAG, "cameraDevice is null")
-            return
-        }
-        val manager = getSystemService(CAMERA_SERVICE) as CameraManager
-        try {
-            val characteristics = manager.getCameraCharacteristics(
-                cameraDevice!!.id
-            )
-            var jpegSizes: Array<Size>? = null
-            if (characteristics != null) {
-                jpegSizes =
-                    characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)!!
-                        .getOutputSizes(ImageFormat.JPEG)
-            }
-            var width = 640
-            var height = 480
-            if (jpegSizes != null && 0 < jpegSizes.size) {
-                width = jpegSizes[0].width
-                height = jpegSizes[0].height
-            }
-            val reader = ImageReader.newInstance(width, height, ImageFormat.JPEG, 1)
-            val outputSurfaces: MutableList<Surface> = ArrayList(2)
-            outputSurfaces.add(reader.surface)
-            outputSurfaces.add(Surface(textureView!!.surfaceTexture))
-            val captureBuilder =
-                cameraDevice!!.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE)
-            captureBuilder.addTarget(reader.surface)
-            captureBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO)
-            // Orientation
-            val rotation = windowManager.defaultDisplay.rotation
-            captureBuilder.set(
-                CaptureRequest.JPEG_ORIENTATION,
-                ORIENTATIONS[rotation]
-            )
-            val file = File(Environment.getExternalStorageDirectory().toString() + "/pic.jpg")
-            val readerListener: ImageReader.OnImageAvailableListener = object :
-                ImageReader.OnImageAvailableListener {
-                override fun onImageAvailable(reader: ImageReader) {
-                    var image: Image? = null
-                    try {
-                        image = reader.acquireLatestImage()
-                        val buffer = image.planes[0].buffer
-                        val bytes = ByteArray(buffer.capacity())
-                        buffer[bytes]
-                        save(bytes)
-                    } catch (e: FileNotFoundException) {
-                        e.printStackTrace()
-                    } catch (e: IOException) {
-                        e.printStackTrace()
-                    } finally {
-                        image?.close()
-                    }
-                }
-
-                @Throws(IOException::class)
-                private fun save(bytes: ByteArray) {
-                    var output: OutputStream? = null
-                    try {
-                        output = FileOutputStream(file)
-                        output.write(bytes)
-                    } finally {
-                        output?.close()
-                    }
-                }
-            }
-            reader.setOnImageAvailableListener(readerListener, mBackgroundHandler)
-            val captureListener: CameraCaptureSession.CaptureCallback = object : CameraCaptureSession.CaptureCallback() {
-                override fun onCaptureCompleted(
-                    session: CameraCaptureSession,
-                    request: CaptureRequest,
-                    result: TotalCaptureResult
-                ) {
-                    super.onCaptureCompleted(session, request, result)
-                    Toast.makeText(this@MainActivity, "Saved:$file", Toast.LENGTH_SHORT).show()
-                    createCameraPreview()
-                }
-            }
-            cameraDevice!!.createCaptureSession(
-                outputSurfaces,
-                object : CameraCaptureSession.StateCallback() {
-                    override fun onConfigured(session: CameraCaptureSession) {
-                        try {
-                            session.capture(
-                                captureBuilder.build(),
-                                captureListener,
-                                mBackgroundHandler
-                            )
-                        } catch (e: CameraAccessException) {
-                            e.printStackTrace()
-                        }
-                    }
-
-                    override fun onConfigureFailed(session: CameraCaptureSession) {}
-                },
-                mBackgroundHandler
-            )
-        } catch (e: CameraAccessException) {
             e.printStackTrace()
         }
     }
@@ -429,7 +314,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        Log.e(TAG, "onResume")
         startBackgroundThread()
         if (textureView!!.isAvailable) {
             openCamera()
@@ -439,8 +323,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onPause() {
-        Log.e(TAG, "onPause")
-        //closeCamera();
+        closeCamera();
         stopBackgroundThread()
         super.onPause()
     }
@@ -573,7 +456,10 @@ class MainActivity : AppCompatActivity() {
     //    decodeImage()
     //}
 
-    private fun decodeImage(img: Bitmap){
+    private fun decodeImage(img: Bitmap, isProcessing: referenceBool){
+
+
+
         //val img = selectedImage?.let { it } ?: kotlin.run { return }
         val image = FirebaseVisionImage.fromBitmap(img)
 
@@ -605,13 +491,16 @@ class MainActivity : AppCompatActivity() {
                      Toast.makeText(baseContext, "Cos jest: " + count,
                              Toast.LENGTH_SHORT).show()
                      setValuesToTextView(it)
+                     //detector.close()
+                     isProcessing.value = false
                  }
                  .addOnFailureListener {
                      // Task failed with an exception
                      Toast.makeText(baseContext, "Oops, something went wrong!",
                              Toast.LENGTH_SHORT).show()
+                     //detector.close()
+                     isProcessing.value = false
                  }
-
 
 
 
