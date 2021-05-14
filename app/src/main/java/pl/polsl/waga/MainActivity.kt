@@ -484,26 +484,25 @@ class MainActivity : AppCompatActivity() {
                            .setClassificationConfidenceThreshold(0.5f)
                            .setMaxPerObjectLabelCount(3)
                            .build()
-
 */
         val detector = FirebaseVision.getInstance().getOnDeviceObjectDetector(options)
 
-         detector.processImage(image)
-                 .addOnSuccessListener {
-                     // Task completed successfully
-                     Toast.makeText(baseContext, "Cos jest: " + count,
-                             Toast.LENGTH_SHORT).show()
-                     setValuesToTextView(it)
-                     //detector.close()
-                     isProcessing.value = false
-                 }
-                 .addOnFailureListener {
-                     // Task failed with an exception
-                     Toast.makeText(baseContext, "Oops, something went wrong!",
-                             Toast.LENGTH_SHORT).show()
-                     //detector.close()
-                     isProcessing.value = false
-                 }
+        detector.processImage(image)
+            .addOnSuccessListener {
+                // Task completed successfully
+                Toast.makeText(baseContext, "Cos jest: " + count,
+                    Toast.LENGTH_SHORT).show()
+                setValuesToTextView(it)
+                //detector.close()
+                isProcessing.value = false
+            }
+            .addOnFailureListener {
+                // Task failed with an exception
+                Toast.makeText(baseContext, "Oops, something went wrong!",
+                    Toast.LENGTH_SHORT).show()
+                //detector.close()
+                isProcessing.value = false
+            }
 
 
 
@@ -511,7 +510,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setValuesToTextView(visionObjects : List<FirebaseVisionObject>) {
-       for ((idx, obj) in visionObjects.withIndex()) {
+        for ((idx, obj) in visionObjects.withIndex()) {
             val box = obj.boundingBox
             var categoryName :String = ""
             if (obj.classificationCategory != FirebaseVisionObject.CATEGORY_UNKNOWN) {
