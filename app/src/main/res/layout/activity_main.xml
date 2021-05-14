@@ -11,7 +11,7 @@
     <TextureView
         android:id="@+id/texture"
         android:layout_width="411dp"
-        android:layout_height="549dp"
+        android:layout_height="463dp"
         android:layout_alignParentTop="true"
         app:layout_constraintBottom_toTopOf="@+id/imageLabel"
         app:layout_constraintEnd_toEndOf="parent"

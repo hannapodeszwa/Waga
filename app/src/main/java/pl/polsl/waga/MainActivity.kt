@@ -1,51 +1,42 @@
 package pl.polsl.waga
 
 import android.Manifest
-import android.app.Activity
 import android.app.AlertDialog
-import android.content.Intent
 import android.content.pm.PackageManager
-import android.content.res.Configuration
 import android.graphics.Bitmap
-import android.graphics.ImageFormat
 import android.graphics.SurfaceTexture
 import android.hardware.camera2.*
-import android.media.Image
 import android.media.ImageReader
 import android.net.Uri
 import android.os.Bundle
-import android.os.Environment
 import android.os.Handler
 import android.os.HandlerThread
-import android.provider.MediaStore
-
 import android.util.Log
 import android.util.Size
 import android.util.SparseIntArray
 import android.view.Surface
 import android.view.TextureView
 import android.view.View
-import android.widget.Button
 import android.widget.Toast
+import androidx.annotation.NonNull
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.core.content.FileProvider
 import com.google.firebase.ml.vision.FirebaseVision
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.google.firebase.ml.vision.label.FirebaseVisionImageLabel
 import com.google.firebase.ml.vision.objects.FirebaseVisionObject
 import com.google.firebase.ml.vision.objects.FirebaseVisionObjectDetectorOptions
-
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.*
-import java.io.*
+import org.tensorflow.lite.support.image.TensorImage
+import org.tensorflow.lite.support.label.Category
+import org.tensorflow.lite.task.vision.detector.Detection
+import org.tensorflow.lite.task.vision.detector.ObjectDetector
+import pl.polsl.waga.ml.FoodModel
 
-import java.text.SimpleDateFormat
+import java.io.*
 import java.util.*
 import kotlin.concurrent.thread
-
-//tak to sie robi
-// a ciekawe czy teraz dziala
 
 
 class MainActivity : AppCompatActivity() {
@@ -53,6 +44,11 @@ class MainActivity : AppCompatActivity() {
     val REQUEST_IMAGE_CAPTURE = 1
     var mCurrentPhotoPath: String = ""
     private var recognizedText = ""
+    lateinit var detector: ObjectDetector
+    // private var interpreter: Interpreter? = null
+    private lateinit var foodModel: FoodModel
+
+
 
     var selectedImage: Bitmap? = null
     lateinit var photoURI: Uri
@@ -115,11 +111,24 @@ class MainActivity : AppCompatActivity() {
         textureView = findViewById<View>(R.id.texture) as TextureView
         assert(textureView != null)
         textureView!!.surfaceTextureListener = textureListener
+
+         foodModel = FoodModel.newInstance(this)
+      /*  val options: ObjectDetector.ObjectDetectorOptions =
+            ObjectDetector.ObjectDetectorOptions.builder().setMaxResults(1).build()
+        Log.e("aa", "222222222")
+
+        detector = ObjectDetector.createFromFileAndOptions(this,
+                "FoodModel.tflite", options)*/
+
         //takePictureButton = findViewById<View>(R.id.btn_takepicture) as Button
         //assert(takePictureButton != null)
         //takePictureButton!!.setOnClickListener { takePicture() }
 
+
+
     }
+
+
 
     var textureListener: TextureView.SurfaceTextureListener = object :
         TextureView.SurfaceTextureListener {
@@ -336,18 +345,6 @@ class MainActivity : AppCompatActivity() {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 //    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
 //        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == Activity.RESULT_OK) {
 //
@@ -461,53 +458,90 @@ class MainActivity : AppCompatActivity() {
     //}
 
     private fun decodeImage(img: Bitmap, isProcessing: referenceBool){
+        //wersja 1
 
-
-
-        //val img = selectedImage?.let { it } ?: kotlin.run { return }
         val image = FirebaseVisionImage.fromBitmap(img)
-
         val options = FirebaseVisionObjectDetectorOptions.Builder()
             .setDetectorMode(FirebaseVisionObjectDetectorOptions.SINGLE_IMAGE_MODE)
             .enableMultipleObjects()
             .enableClassification()
             .build()
+         val detector = FirebaseVision.getInstance().getOnDeviceObjectDetector(options)
+          detector.processImage(image)
+           .addOnSuccessListener {
+               // Task completed successfully
+               Toast.makeText(baseContext, "Cos jest: " + count,
+                   Toast.LENGTH_SHORT).show()
+               setValuesToTextView(it)
+               //detector.close()
+               isProcessing.value = false
+           }
+           .addOnFailureListener {
+               // Task failed with an exception
+               Toast.makeText(baseContext, "Oops, something went wrong!",
+                   Toast.LENGTH_SHORT).show()
+               //detector.close()
+               isProcessing.value = false
+           }
+        ////////////////////////////////////
 
-
-
-        /*   val localModel = LocalModel.Builder()
-                   .setAssetFilePath("model.tflite")
-                   .build()
-           val customObjectDetectorOptions =
-                   CustomObjectDetectorOptions.Builder(localModel)
-                           .setDetectorMode(CustomObjectDetectorOptions.STREAM_MODE)
-                           .enableClassification()
-                           .setClassificationConfidenceThreshold(0.5f)
-                           .setMaxPerObjectLabelCount(3)
-                           .build()
+        //wersja 2
+        /*Log.e("aa", "1111111")
+       val image= TensorImage.fromBitmap(img)
+        val options: ObjectDetector.ObjectDetectorOptions =
+           ObjectDetector.ObjectDetectorOptions.builder().setMaxResults(1).build()
+        Log.e("aa", "222222222")
+        detector = ObjectDetector.createFromFileAndOptions(this,
+               "FoodModel.tflite", options)
+        val results: List<Detection> = detector.detect(image)
 */
-        val detector = FirebaseVision.getInstance().getOnDeviceObjectDetector(options)
 
-        detector.processImage(image)
-            .addOnSuccessListener {
-                // Task completed successfully
-                Toast.makeText(baseContext, "Cos jest: " + count,
-                    Toast.LENGTH_SHORT).show()
-                setValuesToTextView(it)
-                //detector.close()
-                isProcessing.value = false
+        //wersja 3
+        /*val image= TensorImage.fromBitmap(img)
+
+        val outputs: MutableList<Category> = foodModel.process(image)
+            .probabilityAsCategoryList.apply { sortByDescending { it.score } }.takeLast(1) as MutableList<Category>
+        var i=0;
+        imageLabel.text=""
+
+        if(outputs.isNotEmpty())
+        {
+            //setValuesToTextView3(outputs)
+            for (obj in outputs) {
+                imageLabel.text= "Detected object: ${obj.displayName}\n" +"label: ${obj.label}\n" + "Probability: ${obj.score}\n"
             }
-            .addOnFailureListener {
-                // Task failed with an exception
-                Toast.makeText(baseContext, "Oops, something went wrong!",
+        }
+        else
+        {
+            imageLabel.text= "Nie rozpoznano obiektu"
+        }
+*/
+    }
+
+    private fun setValuesToTextView2(visionObjects : List<Detection>) {
+        for ((idx, obj) in visionObjects.withIndex()) {
+            val box = obj.boundingBox
+            var categoryName :String = ""
+            //if (obj. obj.classificationCategory != FirebaseVisionObject.CATEGORY_UNKNOWN) {
+               /* val confidence: Int = obj.classificationConfidence!!.times(100).toInt()
+                when(obj.classificationCategory)
+                {
+                    FirebaseVisionObject.CATEGORY_FOOD->   categoryName = "food"
+                    FirebaseVisionObject.CATEGORY_PLACE->   categoryName = "place"
+                    FirebaseVisionObject.CATEGORY_FASHION_GOOD->   categoryName = "fashion food"
+                    FirebaseVisionObject.CATEGORY_HOME_GOOD->   categoryName = "home good"
+                    FirebaseVisionObject.CATEGORY_UNKNOWN->   categoryName = "unknown"
+                    FirebaseVisionObject.CATEGORY_PLANT->   categoryName = "plant"
+
+                }*/
+                Toast.makeText(baseContext, "Detected object: ${idx}\n" + "Category: ${obj.categories}\n"
+                        + "boundingBox: (${box.left}, ${box.top}) - (${box.right},${box.bottom})\n"
+                        + "Category Label is : ${categoryName}"
+                    ,
                     Toast.LENGTH_SHORT).show()
-                //detector.close()
-                isProcessing.value = false
-            }
-
-
-
-
+                imageLabel.text= "Detected object: ${idx}\n" + "Category: ${obj.categories}\n" +  "boundingBox: (${box.left}, ${box.top}) - (${box.right},${box.bottom})\n" + "Category Label is : ${categoryName}"
+          //  }
+        }
     }
 
     private fun setValuesToTextView(visionObjects : List<FirebaseVisionObject>) {
@@ -534,6 +568,11 @@ class MainActivity : AppCompatActivity() {
                     Toast.LENGTH_SHORT).show()
                 imageLabel.text= "Detected object: ${idx}\n" + "Category: ${obj.classificationCategory}\n" + "trackingId: ${obj.trackingId}\n" + "entityId: ${obj.entityId}\n" + "boundingBox: (${box.left}, ${box.top}) - (${box.right},${box.bottom})\n" + "Confidence: ${confidence}%\n" + "Category Label is : ${categoryName}"
             }
+        }
+    }
+    private fun setValuesToTextView3(visionObjects : List<Category>) {
+        for ((idx, obj) in visionObjects.withIndex()) {
+                imageLabel.text= "Detected object: ${obj.displayName}\n" + "Probability: ${obj.score}\n"
         }
     }
 

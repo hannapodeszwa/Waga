@@ -32,6 +32,10 @@ android {
     buildFeatures {
         mlModelBinding true
     }
+
+    aaptOptions {
+        noCompress "tflite"
+    }
 }
 
 dependencies {
@@ -45,7 +49,11 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.0.1'
     //implementation 'org.tensorflow:tensorflow-lite-support:0.1.0-rc1'
     //implementation 'org.tensorflow:tensorflow-lite-metadata:0.1.0-rc1'
-
+    implementation 'org.tensorflow:tensorflow-lite:+'
+    implementation 'org.tensorflow:tensorflow-lite-support:0.1.0'
+    implementation 'org.tensorflow:tensorflow-lite-metadata:0.1.0'
+    implementation 'org.tensorflow:tensorflow-lite-task-vision:0.1.0'
+    //implementation 'com.google.firebase:firebase-ml-model-interpreter:22.0.3'
 
 
     testImplementation 'junit:junit:4.+'
