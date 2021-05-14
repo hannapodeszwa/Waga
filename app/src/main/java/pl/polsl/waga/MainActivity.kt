@@ -44,6 +44,9 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.concurrent.thread
 
+//tak to sie robi
+
+
 class MainActivity : AppCompatActivity() {
 
     val REQUEST_IMAGE_CAPTURE = 1
