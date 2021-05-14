@@ -45,6 +45,7 @@ import java.util.*
 import kotlin.concurrent.thread
 
 //tak to sie robi
+// a ciekawe czy teraz dziala
 
 
 class MainActivity : AppCompatActivity() {
