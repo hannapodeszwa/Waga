@@ -458,7 +458,7 @@ class MainActivity : AppCompatActivity() {
     //}
 
     private fun decodeImage(img: Bitmap, isProcessing: referenceBool){
-        //wersja 1
+       /* //wersja 1
 
         val image = FirebaseVisionImage.fromBitmap(img)
         val options = FirebaseVisionObjectDetectorOptions.Builder()
@@ -482,7 +482,7 @@ class MainActivity : AppCompatActivity() {
                    Toast.LENGTH_SHORT).show()
                //detector.close()
                isProcessing.value = false
-           }
+           }*/
         ////////////////////////////////////
 
         //wersja 2
@@ -497,10 +497,10 @@ class MainActivity : AppCompatActivity() {
 */
 
         //wersja 3
-        /*val image= TensorImage.fromBitmap(img)
+        val image= TensorImage.fromBitmap(img)
 
         val outputs: MutableList<Category> = foodModel.process(image)
-            .probabilityAsCategoryList.apply { sortByDescending { it.score } }.takeLast(1) as MutableList<Category>
+            .probabilityAsCategoryList.apply { sortByDescending { it.score } }.take(1) as MutableList<Category>
         var i=0;
         imageLabel.text=""
 
@@ -510,12 +510,14 @@ class MainActivity : AppCompatActivity() {
             for (obj in outputs) {
                 imageLabel.text= "Detected object: ${obj.displayName}\n" +"label: ${obj.label}\n" + "Probability: ${obj.score}\n"
             }
+            isProcessing.value = false
         }
         else
         {
             imageLabel.text= "Nie rozpoznano obiektu"
+            isProcessing.value = false
         }
-*/
+
     }
 
     private fun setValuesToTextView2(visionObjects : List<Detection>) {
