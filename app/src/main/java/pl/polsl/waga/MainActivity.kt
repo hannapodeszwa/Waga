@@ -20,13 +20,19 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import com.google.firebase.ml.common.modeldownload.FirebaseModelManager
 import com.google.firebase.ml.vision.label.FirebaseVisionImageLabel
 import com.google.firebase.ml.vision.objects.FirebaseVisionObject
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.*
 import org.tensorflow.lite.DataType
+import org.tensorflow.lite.support.common.TensorProcessor
+import org.tensorflow.lite.support.common.ops.NormalizeOp
+import org.tensorflow.lite.support.image.ImageProcessor
 import org.tensorflow.lite.support.image.TensorImage
+import org.tensorflow.lite.support.image.ops.ResizeOp
 import org.tensorflow.lite.support.label.Category
+import org.tensorflow.lite.support.label.TensorLabel
 import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
 import org.tensorflow.lite.task.vision.detector.Detection
 import org.tensorflow.lite.task.vision.detector.ObjectDetector
@@ -520,27 +526,40 @@ class MainActivity : AppCompatActivity() {
         }*/
 
         //wersja 4 - owoce
-        val image= TensorImage.fromBitmap(img)
-        val byteBuffer = image.buffer
-       /* val byteBuffer: ByteBuffer = ByteBuffer.allocate(128*128*3)
-        byteBuffer.rewind()
-        if (img != null) {
-            img.copyPixelsToBuffer(byteBuffer)
-        }*/
 
-        var input = TensorBuffer.createFixedSize(intArrayOf(1, 150, 150, 3), DataType.FLOAT32)
-        input.loadBuffer(byteBuffer)
+        val imageProcessor = ImageProcessor.Builder()
+            .add(ResizeOp(224, 224, ResizeOp.ResizeMethod.BILINEAR))
+            .build()
+
+        var tImage = TensorImage(DataType.FLOAT32)
+
+        tImage.load(img)
+        tImage = imageProcessor.process(tImage)
 
 
+        val probabilityProcessor =
+            TensorProcessor.Builder().add(NormalizeOp(0f, 255f)).build()
       var owocowyModel = Owoce.newInstance(this)
 
-        val outputs = owocowyModel.process(input)
+        val outputs =
+            owocowyModel.process(probabilityProcessor.process(tImage.tensorBuffer))
+        val outputBuffer = outputs.outputFeature0AsTensorBuffer
+        val labelsList = arrayListOf("Jabłko", "Banan", "Karambola")
+        val tensorLabel = TensorLabel(labelsList, outputBuffer)
+        var tmp=0
+        var owocek =" nw co to "
+for(a in tensorLabel.categoryList)
+{
+    if(tmp<a.score)
+    {
+        owocek=a.label
+    }
 
-        imageLabel.text=""
+}
+        imageLabel.text =  "Owoc : "+ owocek
 
-            imageLabel.text= "Detected object: ${outputs}\n"
+        isProcessing.value = false
 
-            isProcessing.value = false
     }
 
     private fun setValuesToTextView2(visionObjects : List<Detection>) {
