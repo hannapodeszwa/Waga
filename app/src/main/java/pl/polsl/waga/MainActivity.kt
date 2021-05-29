@@ -18,23 +18,22 @@ import android.view.Surface
 import android.view.TextureView
 import android.view.View
 import android.widget.Toast
-import androidx.annotation.NonNull
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import com.google.firebase.ml.vision.FirebaseVision
-import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.google.firebase.ml.vision.label.FirebaseVisionImageLabel
 import com.google.firebase.ml.vision.objects.FirebaseVisionObject
-import com.google.firebase.ml.vision.objects.FirebaseVisionObjectDetectorOptions
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.*
+import org.tensorflow.lite.DataType
 import org.tensorflow.lite.support.image.TensorImage
 import org.tensorflow.lite.support.label.Category
+import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
 import org.tensorflow.lite.task.vision.detector.Detection
 import org.tensorflow.lite.task.vision.detector.ObjectDetector
 import pl.polsl.waga.ml.FoodModel
-
+import pl.polsl.waga.ml.Owoce
 import java.io.*
+import java.nio.ByteBuffer
 import java.util.*
 import kotlin.concurrent.thread
 
@@ -497,7 +496,7 @@ class MainActivity : AppCompatActivity() {
 */
 
         //wersja 3
-        val image= TensorImage.fromBitmap(img)
+       /* val image= TensorImage.fromBitmap(img)
 
         val outputs: MutableList<Category> = foodModel.process(image)
             .probabilityAsCategoryList.apply { sortByDescending { it.score } }.take(1) as MutableList<Category>
@@ -506,18 +505,42 @@ class MainActivity : AppCompatActivity() {
 
         if(outputs.isNotEmpty())
         {
+            imageLabel.text= "Detected object: ${outputs.get(0).displayName}\n" +"label: ${outputs.get(0).label}\n" + "Probability: ${outputs.get(0).score}\n"
+
             //setValuesToTextView3(outputs)
-            for (obj in outputs) {
+          /*  for (obj in outputs) {
                 imageLabel.text= "Detected object: ${obj.displayName}\n" +"label: ${obj.label}\n" + "Probability: ${obj.score}\n"
-            }
+            }*/
             isProcessing.value = false
         }
         else
         {
             imageLabel.text= "Nie rozpoznano obiektu"
             isProcessing.value = false
-        }
+        }*/
 
+        //wersja 4 - owoce
+        val image= TensorImage.fromBitmap(img)
+        val byteBuffer = image.buffer
+       /* val byteBuffer: ByteBuffer = ByteBuffer.allocate(128*128*3)
+        byteBuffer.rewind()
+        if (img != null) {
+            img.copyPixelsToBuffer(byteBuffer)
+        }*/
+
+        var input = TensorBuffer.createFixedSize(intArrayOf(1, 150, 150, 3), DataType.FLOAT32)
+        input.loadBuffer(byteBuffer)
+
+
+      var owocowyModel = Owoce.newInstance(this)
+
+        val outputs = owocowyModel.process(input)
+
+        imageLabel.text=""
+
+            imageLabel.text= "Detected object: ${outputs}\n"
+
+            isProcessing.value = false
     }
 
     private fun setValuesToTextView2(visionObjects : List<Detection>) {
