@@ -550,7 +550,7 @@ class MainActivity : AppCompatActivity() {
         var owocek =" nw co to "
 for(a in tensorLabel.categoryList)
 {
-    if(tmp<a.score)
+    if(a.score > 0.95 && tmp<a.score)
     {
         owocek=a.label
     }
