@@ -528,7 +528,7 @@ class MainActivity : AppCompatActivity() {
         //wersja 4 - owoce
 
         val imageProcessor = ImageProcessor.Builder()
-            .add(ResizeOp(224, 224, ResizeOp.ResizeMethod.BILINEAR))
+            .add(ResizeOp(150, 150, ResizeOp.ResizeMethod.BILINEAR))
             .build()
 
         var tImage = TensorImage(DataType.FLOAT32)
