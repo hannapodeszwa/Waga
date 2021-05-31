@@ -544,13 +544,14 @@ class MainActivity : AppCompatActivity() {
         val outputs =
             owocowyModel.process(probabilityProcessor.process(tImage.tensorBuffer))
         val outputBuffer = outputs.outputFeature0AsTensorBuffer
-        val labelsList = arrayListOf("Jabłko", "Banan", "Karambola")
+        val labelsList = arrayListOf("Jabłko", "Banan", "Karambola", "Guawa", "Kiwi","Mango", "Melon",
+        "Pomarancza", "Brzoskwinia", "Gruszka", "Persymona", "Papaja", "Sliwka", "Granat")
         val tensorLabel = TensorLabel(labelsList, outputBuffer)
         var tmp=0
         var owocek =" nw co to "
 for(a in tensorLabel.categoryList)
 {
-    if(a.score > 0.95 && tmp<a.score)
+    if(a.score > 0.90 && tmp<a.score)
     {
         owocek=a.label
     }
