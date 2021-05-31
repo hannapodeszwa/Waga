@@ -463,69 +463,7 @@ class MainActivity : AppCompatActivity() {
     //}
 
     private fun decodeImage(img: Bitmap, isProcessing: referenceBool){
-       /* //wersja 1
-
-        val image = FirebaseVisionImage.fromBitmap(img)
-        val options = FirebaseVisionObjectDetectorOptions.Builder()
-            .setDetectorMode(FirebaseVisionObjectDetectorOptions.SINGLE_IMAGE_MODE)
-            .enableMultipleObjects()
-            .enableClassification()
-            .build()
-         val detector = FirebaseVision.getInstance().getOnDeviceObjectDetector(options)
-          detector.processImage(image)
-           .addOnSuccessListener {
-               // Task completed successfully
-               Toast.makeText(baseContext, "Cos jest: " + count,
-                   Toast.LENGTH_SHORT).show()
-               setValuesToTextView(it)
-               //detector.close()
-               isProcessing.value = false
-           }
-           .addOnFailureListener {
-               // Task failed with an exception
-               Toast.makeText(baseContext, "Oops, something went wrong!",
-                   Toast.LENGTH_SHORT).show()
-               //detector.close()
-               isProcessing.value = false
-           }*/
-        ////////////////////////////////////
-
-        //wersja 2
-        /*Log.e("aa", "1111111")
-       val image= TensorImage.fromBitmap(img)
-        val options: ObjectDetector.ObjectDetectorOptions =
-           ObjectDetector.ObjectDetectorOptions.builder().setMaxResults(1).build()
-        Log.e("aa", "222222222")
-        detector = ObjectDetector.createFromFileAndOptions(this,
-               "FoodModel.tflite", options)
-        val results: List<Detection> = detector.detect(image)
-*/
-
-        //wersja 3
-       /* val image= TensorImage.fromBitmap(img)
-
-        val outputs: MutableList<Category> = foodModel.process(image)
-            .probabilityAsCategoryList.apply { sortByDescending { it.score } }.take(1) as MutableList<Category>
-        var i=0;
-        imageLabel.text=""
-
-        if(outputs.isNotEmpty())
-        {
-            imageLabel.text= "Detected object: ${outputs.get(0).displayName}\n" +"label: ${outputs.get(0).label}\n" + "Probability: ${outputs.get(0).score}\n"
-
-            //setValuesToTextView3(outputs)
-          /*  for (obj in outputs) {
-                imageLabel.text= "Detected object: ${obj.displayName}\n" +"label: ${obj.label}\n" + "Probability: ${obj.score}\n"
-            }*/
-            isProcessing.value = false
-        }
-        else
-        {
-            imageLabel.text= "Nie rozpoznano obiektu"
-            isProcessing.value = false
-        }*/
-
-        //wersja 4 - owoce
+       //wersja 4 - owoce
 
         val imageProcessor = ImageProcessor.Builder()
             .add(ResizeOp(150, 150, ResizeOp.ResizeMethod.BILINEAR))
@@ -544,8 +482,13 @@ class MainActivity : AppCompatActivity() {
         val outputs =
             owocowyModel.process(probabilityProcessor.process(tImage.tensorBuffer))
         val outputBuffer = outputs.outputFeature0AsTensorBuffer
-        val labelsList = arrayListOf("Jabłko", "Banan", "Karambola", "Guawa", "Kiwi","Mango", "Melon",
-        "Pomarancza", "Brzoskwinia", "Gruszka", "Persymona", "Papaja", "Sliwka", "Granat")
+//        val labelsList = arrayListOf("Jabłko", "Banan", "Karambola", "Guawa", "Kiwi","Mango", "Melon",
+//        "Pomarancza", "Brzoskwinia", "Gruszka", "Persymona", "Papaja", "Sliwka", "Granat")
+        val labelsList = arrayListOf("Jabłko czerwone","Jabłko zielone", "Morela","Awokado",
+            "Banan", "Borowka", "Kaktus", "Kantalupa", "Wisnia","Mandarynka", "Winogrono",
+            "Kiwi", "Cytryna", "Limonka", "Mango",
+      "Pomarancza", "Papaja", "Marakuja", "Brzoskiwnia", "Gruszka", "Ananas", "Sliwka", "Granat",
+        "Malina", "Truskawka", "Arbuz")
         val tensorLabel = TensorLabel(labelsList, outputBuffer)
         var tmp=0
         var owocek =" nw co to "
@@ -563,31 +506,7 @@ for(a in tensorLabel.categoryList)
 
     }
 
-    private fun setValuesToTextView2(visionObjects : List<Detection>) {
-        for ((idx, obj) in visionObjects.withIndex()) {
-            val box = obj.boundingBox
-            var categoryName :String = ""
-            //if (obj. obj.classificationCategory != FirebaseVisionObject.CATEGORY_UNKNOWN) {
-               /* val confidence: Int = obj.classificationConfidence!!.times(100).toInt()
-                when(obj.classificationCategory)
-                {
-                    FirebaseVisionObject.CATEGORY_FOOD->   categoryName = "food"
-                    FirebaseVisionObject.CATEGORY_PLACE->   categoryName = "place"
-                    FirebaseVisionObject.CATEGORY_FASHION_GOOD->   categoryName = "fashion food"
-                    FirebaseVisionObject.CATEGORY_HOME_GOOD->   categoryName = "home good"
-                    FirebaseVisionObject.CATEGORY_UNKNOWN->   categoryName = "unknown"
-                    FirebaseVisionObject.CATEGORY_PLANT->   categoryName = "plant"
 
-                }*/
-                Toast.makeText(baseContext, "Detected object: ${idx}\n" + "Category: ${obj.categories}\n"
-                        + "boundingBox: (${box.left}, ${box.top}) - (${box.right},${box.bottom})\n"
-                        + "Category Label is : ${categoryName}"
-                    ,
-                    Toast.LENGTH_SHORT).show()
-                imageLabel.text= "Detected object: ${idx}\n" + "Category: ${obj.categories}\n" +  "boundingBox: (${box.left}, ${box.top}) - (${box.right},${box.bottom})\n" + "Category Label is : ${categoryName}"
-          //  }
-        }
-    }
 
     private fun setValuesToTextView(visionObjects : List<FirebaseVisionObject>) {
         for ((idx, obj) in visionObjects.withIndex()) {
@@ -615,12 +534,6 @@ for(a in tensorLabel.categoryList)
             }
         }
     }
-    private fun setValuesToTextView3(visionObjects : List<Category>) {
-        for ((idx, obj) in visionObjects.withIndex()) {
-                imageLabel.text= "Detected object: ${obj.displayName}\n" + "Probability: ${obj.score}\n"
-        }
-    }
-
 
     private fun processLabels(labels: List<FirebaseVisionImageLabel>){
 
