@@ -2,6 +2,7 @@ package pl.polsl.waga
 
 import android.Manifest
 import android.app.AlertDialog
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.SurfaceTexture
@@ -21,9 +22,6 @@ import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import com.google.firebase.ml.common.modeldownload.FirebaseModelManager
-import com.google.firebase.ml.vision.label.FirebaseVisionImageLabel
-import com.google.firebase.ml.vision.objects.FirebaseVisionObject
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.*
 import org.tensorflow.lite.DataType
@@ -32,17 +30,14 @@ import org.tensorflow.lite.support.common.ops.NormalizeOp
 import org.tensorflow.lite.support.image.ImageProcessor
 import org.tensorflow.lite.support.image.TensorImage
 import org.tensorflow.lite.support.image.ops.ResizeOp
-import org.tensorflow.lite.support.label.Category
 import org.tensorflow.lite.support.label.TensorLabel
-import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
-import org.tensorflow.lite.task.vision.detector.Detection
 import org.tensorflow.lite.task.vision.detector.ObjectDetector
 import pl.polsl.waga.ml.FoodModel
 import pl.polsl.waga.ml.Owoce
 import java.io.*
-import java.nio.ByteBuffer
 import java.util.*
 import kotlin.concurrent.thread
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -117,7 +112,8 @@ class MainActivity : AppCompatActivity() {
             clearLabel()
         }
         noButton.setOnClickListener {
-            // Do something in response to button click
+            val myIntent = Intent(this, AllProducts::class.java)
+            startActivity(myIntent)
         }
 
         startButton.setOnClickListener {

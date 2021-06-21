@@ -2,7 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="pl.polsl.waga">
 
-
     <uses-feature
         android:name="android.hardware.camera"
         android:required="true" />
@@ -18,6 +17,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Waga">
+        <activity android:name=".AllProducts"></activity>
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -39,10 +39,6 @@
         <meta-data
             android:name="com.google.firebase.ml.vision.DEPENDENCIES"
             android:value="label, barcode, face" />
-
-
-
-
     </application>
 
 </manifest>

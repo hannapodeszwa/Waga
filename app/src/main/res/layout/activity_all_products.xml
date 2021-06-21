@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".AllProducts">
+
+
+    <TableLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="50dp">
+
+            <TextView
+                android:layout_width="232dp"
+                android:layout_height="wrap_content"
+                android:layout_column="1"
+                android:text="Produkty" />
+
+
+            <Button
+                android:id="@+id/exitButton"
+                android:layout_width="125dp"
+                android:layout_height="wrap_content"
+                android:layout_column="1"
+                android:text="Powrót" />
+
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_column="1"
+                android:text="First Name" />
+
+            <EditText
+                android:layout_width="165dp"
+                android:layout_height="wrap_content"
+                android:width="200px" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"/>
+
+    </TableLayout>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
