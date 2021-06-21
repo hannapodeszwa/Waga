@@ -55,6 +55,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var imageBitmap: Bitmap
     private lateinit var IsProcessing :referenceBool
     private var recognizedFruit: String= ""
+    private var toPrint:String = ""
 
 
     var selectedImage: Bitmap? = null
@@ -110,7 +111,7 @@ class MainActivity : AppCompatActivity() {
         noButton.setVisibility(View.GONE);
         //BUTTONS
         yesButton.setOnClickListener {
-            val toast = Toast.makeText(applicationContext, "Drukowanie etykiety dla " +recognizedFruit, Toast.LENGTH_SHORT)
+            val toast = Toast.makeText(applicationContext, "Drukowanie etykiety dla " +toPrint, Toast.LENGTH_SHORT)
             toast.show()
 
             clearLabel()
@@ -126,6 +127,8 @@ class MainActivity : AppCompatActivity() {
             startButton.setText("Rozpoznaj ponownie")
             yesButton.setVisibility(View.VISIBLE);
             noButton.setVisibility(View.VISIBLE);
+            toPrint=recognizedFruit
+            recognizedFruit=""
         }
 
     }
@@ -377,7 +380,7 @@ class MainActivity : AppCompatActivity() {
         var probability = " "
         for(a in tensorLabel.categoryList)
         {
-            if(a.score > 0.10 && tmp<a.score)
+            if(a.score > 0.50 && tmp<a.score)
             {
                 fruit=a.label
                 probability = a.score.toString()
