@@ -113,7 +113,7 @@ class MainActivity : AppCompatActivity() {
         yesButton.setOnClickListener {
             val toast = Toast.makeText(applicationContext, "Drukowanie etykiety dla " +toPrint, Toast.LENGTH_SHORT)
             toast.show()
-
+            startButton.setText("Zważ")
             clearLabel()
         }
         noButton.setOnClickListener {
