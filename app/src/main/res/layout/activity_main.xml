@@ -13,8 +13,8 @@
         android:layout_width="400dp"
         android:layout_height="332dp"
         android:layout_alignParentTop="true"
-        android:layout_marginBottom="113dp"
-        app:layout_constraintBottom_toTopOf="@+id/imageLabel"
+        android:layout_marginBottom="20dp"
+        app:layout_constraintBottom_toTopOf="@+id/startButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
