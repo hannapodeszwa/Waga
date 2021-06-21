@@ -29,28 +29,15 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!--        <ScrollView-->
-    <!--            android:layout_width="fill_parent"-->
-    <!--            android:layout_height="fill_parent"-->
-    <!--            android:orientation="vertical"-->
-    <!--            tools:context = ".AllProducts">-->
-
     <ScrollView
-        android:id="@+id/scroll"
-        style="@android:style/Widget.DeviceDefault.ScrollView"
-        android:layout_width="300dp"
-        android:layout_height="793dp"
-        android:layout_marginStart="50dp"
-        android:layout_marginTop="62dp"
-        android:layout_marginEnd="50dp"
-        android:layout_marginBottom="51dp"
-        android:orientation="vertical"
-        android:overScrollMode="always"
-        android:scrollbarAlwaysDrawVerticalTrack="true"
-        android:scrollbarStyle="outsideInset"
-        android:scrollbars="vertical"
+        android:layout_width="404dp"
+        android:layout_height="850dp"
+        android:layout_marginTop="22dp"
+        android:layout_marginBottom="34dp"
+        android:background="#f7f7f7"
+        android:fillViewport="true"
+        android:padding="25dp"
         app:layout_constraintBottom_toTopOf="@+id/exitButton"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView">
 
@@ -60,50 +47,6 @@
             android:layout_height="wrap_content"
             android:orientation="vertical" />
     </ScrollView>
-
-    <!--    <TableLayout-->
-    <!--        android:id="@+id/table"-->
-    <!--        android:layout_width="415dp"-->
-    <!--        android:layout_height="585dp"-->
-    <!--        android:layout_marginTop="1dp"-->
-    <!--        android:layout_marginBottom="35dp"-->
-    <!--        app:layout_constraintBottom_toTopOf="@+id/exitButton"-->
-    <!--        app:layout_constraintTop_toBottomOf="@+id/textView"-->
-    <!--        tools:layout_editor_absoluteX="1dp">-->
-
-    <!--        <TableRow-->
-    <!--            android:layout_width="match_parent"-->
-    <!--            android:layout_height="match_parent" />-->
-
-    <!--        <TableRow-->
-    <!--            android:layout_width="match_parent"-->
-    <!--            android:layout_height="match_parent" />-->
-
-    <!--        <TableRow-->
-    <!--            android:layout_width="match_parent"-->
-    <!--            android:layout_height="match_parent" />-->
-
-    <!--        <TableRow-->
-    <!--            android:layout_width="match_parent"-->
-    <!--            android:layout_height="match_parent" />-->
-    <!--    </TableLayout>-->
-    <!--        </ScrollView>-->
-
-    <!--    <ScrollView-->
-    <!--        android:layout_width="fill_parent"-->
-    <!--        android:layout_height="fill_parent" >-->
-    <!--    <LinearLayout-->
-    <!--        android:id="@+id/linearLayout"-->
-    <!--        android:layout_width="413dp"-->
-    <!--        android:layout_height="569dp"-->
-    <!--        android:layout_marginTop="36dp"-->
-    <!--        android:layout_marginBottom="16dp"-->
-    <!--        android:orientation="vertical"-->
-    <!--        app:layout_constraintBottom_toTopOf="@+id/exitButton"-->
-    <!--        app:layout_constraintTop_toBottomOf="@+id/textView"-->
-    <!--        tools:layout_editor_absoluteX="1dp">-->
-    <!--    </LinearLayout>-->
-    <!--    </ScrollView>-->
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

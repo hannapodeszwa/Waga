@@ -20,7 +20,7 @@ class AllProducts : AppCompatActivity() {
             startActivity(myIntent)
         }
         /////////////////////////////
-        createLayoutDynamically(10);
+        createLayoutDynamically(30);
         ///////////////////////////
     }
     private fun createLayoutDynamically(n: Int) {
