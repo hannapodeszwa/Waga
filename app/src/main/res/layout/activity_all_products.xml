@@ -32,7 +32,6 @@
     <ScrollView
         android:layout_width="387dp"
         android:layout_height="412dp"
-        android:layout_marginStart="3dp"
         android:layout_marginTop="20dp"
         android:background="#f7f7f7"
         android:fillViewport="true"
@@ -45,7 +44,7 @@
             android:id="@+id/linearLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical" >
+            android:orientation="vertical">
 
             <LinearLayout
                 android:id="@+id/layoutH"

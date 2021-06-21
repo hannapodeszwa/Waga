@@ -17,7 +17,7 @@ class AllProducts : AppCompatActivity() {
 
         val exitButton: Button = findViewById(R.id.exitButton)
         exitButton.setOnClickListener {
-            createLayoutDynamically(10);
+            //createLayoutDynamically(10);
             val myIntent = Intent(this, MainActivity::class.java)
             startActivity(myIntent)
         }
@@ -57,6 +57,11 @@ class AllProducts : AppCompatActivity() {
                     Toast.makeText(this,
                         "Button clicked index = " + id_, Toast.LENGTH_SHORT)
                         .show();
+                    val toast = Toast.makeText(applicationContext, "Drukowanie etykiety dla Jabłko" , Toast.LENGTH_SHORT)
+                    toast.show()
+                    val myIntent = Intent(this, MainActivity::class.java)
+                    startActivity(myIntent)
+
                 }
             }
         }
