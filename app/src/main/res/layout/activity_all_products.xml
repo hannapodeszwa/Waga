@@ -30,14 +30,14 @@
         app:layout_constraintEnd_toEndOf="parent" />
 
     <ScrollView
-        android:layout_width="404dp"
-        android:layout_height="850dp"
-        android:layout_marginTop="22dp"
-        android:layout_marginBottom="34dp"
+        android:layout_width="387dp"
+        android:layout_height="412dp"
+        android:layout_marginStart="3dp"
+        android:layout_marginTop="20dp"
         android:background="#f7f7f7"
         android:fillViewport="true"
         android:padding="25dp"
-        app:layout_constraintBottom_toTopOf="@+id/exitButton"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView">
 
@@ -45,7 +45,14 @@
             android:id="@+id/linearLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical" />
+            android:orientation="vertical" >
+
+            <LinearLayout
+                android:id="@+id/layoutH"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"></LinearLayout>
+        </LinearLayout>
     </ScrollView>
 
 

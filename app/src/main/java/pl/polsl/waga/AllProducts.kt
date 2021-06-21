@@ -2,9 +2,11 @@ package pl.polsl.waga
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.*
+import android.widget.Button
+import android.widget.ImageButton
+import android.widget.LinearLayout
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import kotlinx.android.synthetic.main.activity_all_products.*
 
 
 class AllProducts : AppCompatActivity() {
@@ -26,26 +28,36 @@ class AllProducts : AppCompatActivity() {
     private fun createLayoutDynamically(n: Int) {
        // val baseLayout = findViewById<TableLayout>(R.id.table)
         val baseLayout = findViewById<LinearLayout>(R.id.linearLayout)
+
         val lp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
 
         for (i in 0..n) {
-            var myButton:Button = Button(this);
-            myButton.setText("Button :"+i);
-            myButton.setId(i);
-           // myButton.width = 10 + i
-            //myButton.height =20 + i
-            myButton.x = 10.0f + i*25.0f
-            myButton.y = 10.0f + i*25.0f
-            var id_ = myButton.getId();
+            val layoutH2 = LinearLayout(this)
+            baseLayout.addView(layoutH2)
 
-            //val ll = LinearLayout(R.id.linearLayout)
-            baseLayout.addView(myButton);
-           // ll.addView(myButton, lp)
+            for(j in 0..2)
+            {
+                var myButton: ImageButton = ImageButton(this);
 
-            myButton.setOnClickListener {
-                Toast.makeText(this,
-                    "Button clicked index = " + id_, Toast.LENGTH_SHORT)
-                    .show();
+                myButton.setImageResource(R.drawable.apple75);
+                //myButton.setText(i.toString()+"Button :"+j);
+                myButton.setId(i*3 + j);
+
+               // myButton.width = 60
+                //myButton.height =50
+
+                myButton.x = 10.0f + j*25.0f
+                myButton.y = 10.0f //+ i*25.0f
+                var id_ = myButton.getId();
+
+                layoutH2.addView(myButton);
+                //baseLayout.addView(myButton);
+
+                myButton.setOnClickListener {
+                    Toast.makeText(this,
+                        "Button clicked index = " + id_, Toast.LENGTH_SHORT)
+                        .show();
+                }
             }
         }
     }
