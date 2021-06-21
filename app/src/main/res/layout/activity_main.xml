@@ -21,8 +21,8 @@
 
     <TextView
         android:id="@+id/imageLabel"
-        android:layout_width="337dp"
-        android:layout_height="77dp"
+        android:layout_width="340dp"
+        android:layout_height="57dp"
         android:layout_marginStart="30dp"
         android:layout_marginTop="20dp"
         android:layout_marginEnd="30dp"
@@ -45,21 +45,21 @@
 
     <Button
         android:id="@+id/yesButton"
-        android:layout_width="123dp"
-        android:layout_height="54dp"
+        android:layout_width="127dp"
+        android:layout_height="78dp"
         android:layout_marginStart="30dp"
         android:layout_marginTop="20dp"
-        android:text="Tak"
+        android:text="Tak, wydrukuj etykiete"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imageLabel" />
 
     <Button
         android:id="@+id/noButton"
-        android:layout_width="128dp"
-        android:layout_height="51dp"
+        android:layout_width="136dp"
+        android:layout_height="78dp"
         android:layout_marginTop="20dp"
         android:layout_marginEnd="30dp"
-        android:text="Nie"
+        android:text="Nie, znajdź produkt ręcznie"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imageLabel" />
 
