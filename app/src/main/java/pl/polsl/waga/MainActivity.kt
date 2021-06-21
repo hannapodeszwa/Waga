@@ -17,6 +17,7 @@ import android.util.SparseIntArray
 import android.view.Surface
 import android.view.TextureView
 import android.view.View
+import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -43,7 +44,6 @@ import java.nio.ByteBuffer
 import java.util.*
 import kotlin.concurrent.thread
 
-
 class MainActivity : AppCompatActivity() {
 
     val REQUEST_IMAGE_CAPTURE = 1
@@ -52,7 +52,9 @@ class MainActivity : AppCompatActivity() {
     lateinit var detector: ObjectDetector
     // private var interpreter: Interpreter? = null
     private lateinit var foodModel: FoodModel
-
+    lateinit var imageBitmap: Bitmap
+    private lateinit var IsProcessing :referenceBool
+    private var recognizedFruit: String= ""
 
 
     var selectedImage: Bitmap? = null
@@ -61,25 +63,6 @@ class MainActivity : AppCompatActivity() {
         CAMERA,
         WRITE_DATA
     }
-
-//    override fun onCreate(savedInstanceState: Bundle?) {
-//        super.onCreate(savedInstanceState)
-//        setContentView(R.layout.activity_main)
-//
-//        checkAndRequestPermissionsFor(arrayListOf(UserPermission.CAMERA, UserPermission.WRITE_DATA))
-//    }
-//
-//    override fun onResume() {
-//        super.onResume()
-//    }
-//
-//    override fun onPause() {
-//        super.onPause()
-//    }
-
-
-
-
 
 
     private var count = 0
@@ -110,26 +93,40 @@ class MainActivity : AppCompatActivity() {
     private var mBackgroundThread: HandlerThread? = null
     private data class referenceBool (var value: Boolean)
     private var isProcessing : referenceBool = referenceBool(false)
+
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         textureView = findViewById<View>(R.id.texture) as TextureView
-        assert(textureView != null)
-        textureView!!.surfaceTextureListener = textureListener
-
-         foodModel = FoodModel.newInstance(this)
-      /*  val options: ObjectDetector.ObjectDetectorOptions =
-            ObjectDetector.ObjectDetectorOptions.builder().setMaxResults(1).build()
-        Log.e("aa", "222222222")
-
-        detector = ObjectDetector.createFromFileAndOptions(this,
-                "FoodModel.tflite", options)*/
-
-        //takePictureButton = findViewById<View>(R.id.btn_takepicture) as Button
-        //assert(takePictureButton != null)
-        //takePictureButton!!.setOnClickListener { takePicture() }
 
 
+        foodModel = FoodModel.newInstance(this)
+        val yesButton: Button = findViewById(R.id.yesButton)
+        val noButton: Button = findViewById(R.id.noButton)
+        val startButton: Button = findViewById(R.id.startButton)
+        yesButton.setVisibility(View.GONE);
+        noButton.setVisibility(View.GONE);
+        //BUTTONS
+        yesButton.setOnClickListener {
+            val toast = Toast.makeText(applicationContext, "Drukowanie etykiety dla " +recognizedFruit, Toast.LENGTH_SHORT)
+            toast.show()
+
+            clearLabel()
+        }
+        noButton.setOnClickListener {
+            // Do something in response to button click
+        }
+
+        startButton.setOnClickListener {
+            decodeImage(imageBitmap,IsProcessing)
+
+
+            startButton.setText("Rozpoznaj ponownie")
+            yesButton.setVisibility(View.VISIBLE);
+            noButton.setVisibility(View.VISIBLE);
+        }
 
     }
 
@@ -151,13 +148,6 @@ class MainActivity : AppCompatActivity() {
         }
 
         override fun onSurfaceTextureUpdated(texture: SurfaceTexture) {
-            // Start changes
-            // Get the bitmap
-
-
-
-            // Do whatever you like with the frame
-            //frameProcessor?.processFrame(frame)
             count++;
 
             if(isProcessing.value == false) {
@@ -165,20 +155,15 @@ class MainActivity : AppCompatActivity() {
                 thread {
                     val frame = Bitmap.createBitmap(textureView!!.width, textureView!!.height, Bitmap.Config.ARGB_8888)
                     textureView?.getBitmap(frame)
-                    decodeImage(frame,isProcessing)
+                    imageBitmap=frame
+                    IsProcessing=isProcessing
+                    // decodeImage(frame,isProcessing)
                 }
-
-
-                //val promise = launch(CommonPool1) {
-                //    asyncDecode(frame,isProcessing)
-                //}
             }
-            // End changes
         }
     }
 
     suspend private fun asyncDecode(frame: Bitmap, isProcessing: referenceBool) {
-        //decodeImage(frame)
         isProcessing.value = false
     }
 
@@ -348,104 +333,6 @@ class MainActivity : AppCompatActivity() {
 
 
 
-
-
-//    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-//        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == Activity.RESULT_OK) {
-//
-//            // Once the image is captured, get it from the saved location
-//            val f = File(mCurrentPhotoPath)
-//            val contentUri = Uri.fromFile(f)
-//
-//            if (getBitmapFromUri(contentUri) != null){
-//                selectedImage = getBitmapFromUri(contentUri)!!
-//            }
-//            snapShotView.setImageBitmap(selectedImage)
-//        }
-//    }
-//
-//    fun takePicture(view: View){
-//
-//        clearLabel()
-//        dispatchTakePictureIntent()
-//    }
-//
-//    private fun dispatchTakePictureIntent() {
-//        val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-//        if (takePictureIntent.resolveActivity(packageManager) != null) {
-//            var photoFile:File? = null
-//
-//            try {
-//                //TODO: Clean job to clear all the used images
-//                photoFile = createImageFile()
-//            }catch (ex: IOException){
-//
-//            }
-//
-//            if (photoFile != null) {
-//                photoURI = FileProvider.getUriForFile(
-//                    this,
-//                    "pl.polsl.waga",
-//                    photoFile
-//                )
-//                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
-//                startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE)
-//            }
-//        }
-//    }
-//
-//    @Throws(IOException::class)
-//    private fun createImageFile(): File {
-//        // Create an image file name
-//        val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
-//        val imageFileName = "JPEG_" + timeStamp + "_"
-//        val storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-//        val image = File.createTempFile(
-//            imageFileName, /* prefix */
-//            ".jpg", /* suffix */
-//            storageDir      /* directory */
-//        )
-//
-//        // Save a file: path for use with ACTION_VIEW intents
-//        mCurrentPhotoPath = image.getAbsolutePath()
-//        return image
-//    }
-//
-//    private fun getBitmapFromUri(filePath: Uri): Bitmap? {
-//        var bitmap:Bitmap? = null
-//        try{
-//            var tempBitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, filePath)
-//            bitmap = updateImage(tempBitmap)
-//        }catch (ex: IOException){
-//
-//        }
-//        return bitmap
-//    }
-//
-//    private fun updateImage(bitmap: Bitmap): Bitmap{
-//
-//        val isLandScape = (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE)
-//        var scaledImageWidth = 0.0
-//        var scaledImageHeight = 0.0
-//
-//        when (isLandScape){
-//
-//            (true)->{
-//                scaledImageHeight = snapShotView.height.toDouble()
-//                scaledImageWidth = bitmap.width.toDouble() * scaledImageHeight / bitmap.height.toDouble()
-//            }
-//            (false)->{
-//                scaledImageWidth = snapShotView.width.toDouble()
-//                scaledImageHeight = bitmap.height.toDouble() * scaledImageWidth / bitmap.width.toDouble()
-//            }
-//        }
-//        val resizedBitmap = Bitmap.createScaledBitmap(bitmap,scaledImageWidth.toInt(),scaledImageHeight.toInt(),true)
-//
-//        return resizedBitmap
-//    }
-
-
-
     /***
      *      _           _          _
      *     | |         | |        | |
@@ -456,14 +343,9 @@ class MainActivity : AppCompatActivity() {
      *
      *
      */
-    // https://firebase.google.com/docs/ml-kit/android/label-images
-    //fun decodeImage(view: View){
-
-    //    decodeImage()
-    //}
 
     private fun decodeImage(img: Bitmap, isProcessing: referenceBool){
-       //wersja 4 - owoce
+        //wersja 4 - owoce
 
         val imageProcessor = ImageProcessor.Builder()
             .add(ResizeOp(150, 150, ResizeOp.ResizeMethod.BILINEAR))
@@ -477,85 +359,38 @@ class MainActivity : AppCompatActivity() {
 
         val probabilityProcessor =
             TensorProcessor.Builder().add(NormalizeOp(0f, 255f)).build()
-      var owocowyModel = Owoce.newInstance(this)
+        var owocowyModel = Owoce.newInstance(this)
 
         val outputs =
             owocowyModel.process(probabilityProcessor.process(tImage.tensorBuffer))
         val outputBuffer = outputs.outputFeature0AsTensorBuffer
-//        val labelsList = arrayListOf("Jabłko", "Banan", "Karambola", "Guawa", "Kiwi","Mango", "Melon",
-//        "Pomarancza", "Brzoskwinia", "Gruszka", "Persymona", "Papaja", "Sliwka", "Granat")
-        val labelsList = arrayListOf("Jabłko czerwone","Jabłko zielone", "Morela","Awokado",
+        val labelsList = arrayListOf("Jabłko", "Banan", "Karambola", "Guawa", "Kiwi","Mango", "Melon",
+            "Pomarancza", "Brzoskwinia", "Gruszka", "Persymona", "Papaja", "Sliwka", "Granat")
+        /*val labelsList = arrayListOf("Jabłko czerwone","Jabłko zielone", "Morela","Awokado",
             "Banan", "Borowka", "Kaktus", "Kantalupa", "Wisnia","Mandarynka", "Winogrono",
             "Kiwi", "Cytryna", "Limonka", "Mango",
       "Pomarancza", "Papaja", "Marakuja", "Brzoskiwnia", "Gruszka", "Ananas", "Sliwka", "Granat",
-        "Malina", "Truskawka", "Arbuz")
+        "Malina", "Truskawka", "Arbuz")*/
         val tensorLabel = TensorLabel(labelsList, outputBuffer)
         var tmp=0
-        var owocek =" nw co to "
-for(a in tensorLabel.categoryList)
-{
-    if(a.score > 0.90 && tmp<a.score)
-    {
-        owocek=a.label
-    }
+        var fruit =" nw co to "
+        var probability = " "
+        for(a in tensorLabel.categoryList)
+        {
+            if(a.score > 0.10 && tmp<a.score)
+            {
+                fruit=a.label
+                probability = a.score.toString()
+            }
 
-}
-        imageLabel.text =  "Owoc : "+ owocek
+        }
+        recognizedFruit = fruit
+        //imageLabel.text =  "Owoc : "+ owocek + "\nPrawdopodobieństwo: " + probability
+        imageLabel.text =  "Czy twój produkt to:\n"+ recognizedFruit + "\nPrawdopodobieństwo: " + probability
 
         isProcessing.value = false
-
     }
 
-
-
-    private fun setValuesToTextView(visionObjects : List<FirebaseVisionObject>) {
-        for ((idx, obj) in visionObjects.withIndex()) {
-            val box = obj.boundingBox
-            var categoryName :String = ""
-            if (obj.classificationCategory != FirebaseVisionObject.CATEGORY_UNKNOWN) {
-                val confidence: Int = obj.classificationConfidence!!.times(100).toInt()
-                when(obj.classificationCategory)
-                {
-                    FirebaseVisionObject.CATEGORY_FOOD->   categoryName = "food"
-                    FirebaseVisionObject.CATEGORY_PLACE->   categoryName = "place"
-                    FirebaseVisionObject.CATEGORY_FASHION_GOOD->   categoryName = "fashion food"
-                    FirebaseVisionObject.CATEGORY_HOME_GOOD->   categoryName = "home good"
-                    FirebaseVisionObject.CATEGORY_UNKNOWN->   categoryName = "unknown"
-                    FirebaseVisionObject.CATEGORY_PLANT->   categoryName = "plant"
-
-                }
-                Toast.makeText(baseContext, "Detected object: ${idx}\n" + "Category: ${obj.classificationCategory}\n"
-                        + "trackingId: ${obj.trackingId}\n"
-                        + "boundingBox: (${box.left}, ${box.top}) - (${box.right},${box.bottom})\n"
-                        + "Confidence: ${confidence}%\n" + "Category Label is : ${categoryName}"
-                    ,
-                    Toast.LENGTH_SHORT).show()
-                imageLabel.text= "Detected object: ${idx}\n" + "Category: ${obj.classificationCategory}\n" + "trackingId: ${obj.trackingId}\n" + "entityId: ${obj.entityId}\n" + "boundingBox: (${box.left}, ${box.top}) - (${box.right},${box.bottom})\n" + "Confidence: ${confidence}%\n" + "Category Label is : ${categoryName}"
-            }
-        }
-    }
-
-    private fun processLabels(labels: List<FirebaseVisionImageLabel>){
-
-
-        val lbl = labels.firstOrNull()
-        var msg = lbl?.text + "," + lbl?.confidence
-        updateLabel(msg)
-        for (label in labels) {
-            val text = label.text
-            val entityId = label.entityId
-            val confidence = label.confidence
-
-            Log.d("TEXTRECOG",text + entityId + confidence)
-
-        }
-
-    }
-
-    private fun updateLabel(message: String){
-
-        this.imageLabel.text = message
-    }
     private fun clearLabel(){
 
         this.imageLabel.text = ""
