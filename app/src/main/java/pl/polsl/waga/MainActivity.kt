@@ -344,10 +344,10 @@ class MainActivity : AppCompatActivity() {
 
         val probabilityProcessor =
             TensorProcessor.Builder().add(NormalizeOp(0f, 255f)).build()
-        var owocowyModel = Warzywa.newInstance(this)
+        var myModel = Warzywa.newInstance(this)
 
         val outputs =
-            owocowyModel.process(probabilityProcessor.process(tImage.tensorBuffer))
+            myModel.process(probabilityProcessor.process(tImage.tensorBuffer))
         val outputBuffer = outputs.outputFeature0AsTensorBuffer
 
 
