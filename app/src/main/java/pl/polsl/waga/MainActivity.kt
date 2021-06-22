@@ -8,7 +8,6 @@ import android.graphics.Bitmap
 import android.graphics.SurfaceTexture
 import android.hardware.camera2.*
 import android.media.ImageReader
-import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
@@ -31,8 +30,6 @@ import org.tensorflow.lite.support.image.ImageProcessor
 import org.tensorflow.lite.support.image.TensorImage
 import org.tensorflow.lite.support.image.ops.ResizeOp
 import org.tensorflow.lite.support.label.TensorLabel
-import org.tensorflow.lite.task.vision.detector.ObjectDetector
-import pl.polsl.waga.ml.FoodModel
 import pl.polsl.waga.ml.Warzywa
 import java.io.*
 import java.util.*
@@ -50,7 +47,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var IsProcessing :referenceBool
     private var recognizedFruit: String= ""
     private var toPrint:String = ""
-    var isRecognized = false
+    private var isRecognized = false
 
     enum class UserPermission{
         CAMERA,
@@ -73,7 +70,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    lateinit var cameraId: String
+    private lateinit var cameraId: String
     protected var cameraDevice: CameraDevice? = null
     protected var cameraCaptureSessions: CameraCaptureSession? = null
     protected var captureRequestBuilder: CaptureRequest.Builder? = null
@@ -95,8 +92,8 @@ class MainActivity : AppCompatActivity() {
         val yesButton: Button = findViewById(R.id.yesButton)
         val noButton: Button = findViewById(R.id.noButton)
         val startButton: Button = findViewById(R.id.startButton)
-        yesButton.setVisibility(View.GONE);
-        noButton.setVisibility(View.GONE);
+        yesButton.setVisibility(View.GONE)
+        noButton.setVisibility(View.GONE)
 
         //BUTTONS
         yesButton.setOnClickListener {
@@ -109,7 +106,7 @@ class MainActivity : AppCompatActivity() {
             val myIntent = Intent(this, AllProducts::class.java)
             val args = Bundle()
             args.putSerializable("labellist", labelsList as Serializable)
-            myIntent.putExtra("BUNDLE",args);
+            myIntent.putExtra("BUNDLE",args)
             startActivity(myIntent)
         }
 
@@ -121,7 +118,7 @@ class MainActivity : AppCompatActivity() {
 
             if(isRecognized) {
                 yesButton.setVisibility(View.VISIBLE)
-                noButton.setVisibility(View.VISIBLE);
+                noButton.setVisibility(View.VISIBLE)
                 toPrint = recognizedFruit
             }
             recognizedFruit=""
@@ -147,7 +144,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         override fun onSurfaceTextureUpdated(texture: SurfaceTexture) {
-            count++;
+            count++
 
             if(isProcessing.value == false) {
                 isProcessing.value = true
@@ -323,7 +320,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onPause() {
-        closeCamera();
+        closeCamera()
         stopBackgroundThread()
         super.onPause()
     }
@@ -344,7 +341,7 @@ class MainActivity : AppCompatActivity() {
 
         val probabilityProcessor =
             TensorProcessor.Builder().add(NormalizeOp(0f, 255f)).build()
-        var myModel = Warzywa.newInstance(this)
+        val myModel = Warzywa.newInstance(this)
 
         val outputs =
             myModel.process(probabilityProcessor.process(tImage.tensorBuffer))
