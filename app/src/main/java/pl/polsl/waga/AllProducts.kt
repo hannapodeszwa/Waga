@@ -36,8 +36,6 @@ class AllProducts : AppCompatActivity() {
     private fun createLayoutDynamically(buttonsNumber: Int) {
         val baseLayout = findViewById<LinearLayout>(R.id.linearLayout)
 
-        val lp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
-
         for (i in 0..buttonsNumber) {
             val layoutH2 = LinearLayout(this)
             baseLayout.addView(layoutH2)
@@ -51,9 +49,7 @@ class AllProducts : AppCompatActivity() {
 
                 var myButton: ImageButton = ImageButton(this);
 
-               // myButton.setImageResource(R.drawable.apple75);
-                //myButton.setImageResource(imagesList.get((i*3)+j));
-                myButton.setImageResource(imagesList.get(0));
+                myButton.setImageResource(imagesList.get((i*3)+j));
                 myButton.setId(i*3 + j);
 
                 myButton.x = 10.0f + j*25.0f
@@ -62,9 +58,7 @@ class AllProducts : AppCompatActivity() {
                 layoutH2.addView(myButton);
 
                 myButton.setOnClickListener {
-                   // val toast = Toast.makeText(applicationContext, "Drukowanie etykiety dla " + labelsList.get(i*3+j) , Toast.LENGTH_SHORT)
-                    val toast = Toast.makeText(applicationContext, "Drukowanie etykiety dla " + labelsList.get(0) , Toast.LENGTH_SHORT)
-
+                   val toast = Toast.makeText(applicationContext, "Drukowanie etykiety dla " + labelsList.get(i*3+j) , Toast.LENGTH_SHORT)
                     toast.show()
                     val myIntent = Intent(this, MainActivity::class.java)
                     startActivity(myIntent)

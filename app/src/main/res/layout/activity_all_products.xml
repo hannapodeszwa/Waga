@@ -14,7 +14,7 @@
         android:layout_column="1"
         android:layout_marginStart="6dp"
         android:layout_marginTop="16dp"
-        android:text="Produkty"
+        android:text="Kliknij swój produkt:"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
