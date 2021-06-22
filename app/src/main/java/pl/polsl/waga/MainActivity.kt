@@ -33,7 +33,7 @@ import org.tensorflow.lite.support.image.ops.ResizeOp
 import org.tensorflow.lite.support.label.TensorLabel
 import org.tensorflow.lite.task.vision.detector.ObjectDetector
 import pl.polsl.waga.ml.FoodModel
-import pl.polsl.waga.ml.Owoce
+import pl.polsl.waga.ml.Warzywa
 import java.io.*
 import java.util.*
 import kotlin.concurrent.thread
@@ -105,6 +105,9 @@ class MainActivity : AppCompatActivity() {
         }
         noButton.setOnClickListener {
             val myIntent = Intent(this, AllProducts::class.java)
+            val args = Bundle()
+            args.putSerializable("labellist", labelsList as Serializable)
+            myIntent.putExtra("BUNDLE",args);
             startActivity(myIntent)
         }
 
@@ -339,7 +342,7 @@ class MainActivity : AppCompatActivity() {
 
         val probabilityProcessor =
             TensorProcessor.Builder().add(NormalizeOp(0f, 255f)).build()
-        var owocowyModel = Owoce.newInstance(this)
+        var owocowyModel = Warzywa.newInstance(this)
 
         val outputs =
             owocowyModel.process(probabilityProcessor.process(tImage.tensorBuffer))

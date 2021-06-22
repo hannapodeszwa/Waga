@@ -10,8 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 
 
 class AllProducts : AppCompatActivity() {
-    private var labelsList = arrayListOf("Jabłko", "Banan", "Karambola", "Guawa", "Kiwi","Mango", "Melon",
-        "Pomarancza", "Brzoskwinia", "Gruszka", "Persymona", "Papaja", "Sliwka", "Granat")
+    private lateinit var labelsList :ArrayList<String>;
     private var imagesList = arrayListOf(R.drawable.apple75, R.drawable.apple75,R.drawable.apple75,R.drawable.apple75,
         R.drawable.apple75, R.drawable.apple75,R.drawable.apple75,R.drawable.apple75,
         R.drawable.apple75, R.drawable.apple75,R.drawable.apple75,R.drawable.apple75,R.drawable.apple75)
@@ -20,12 +19,15 @@ class AllProducts : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_all_products)
 
-
         val exitButton: Button = findViewById(R.id.exitButton)
         exitButton.setOnClickListener {
             val myIntent = Intent(this, MainActivity::class.java)
             startActivity(myIntent)
         }
+
+        val intent = intent;
+        val args = intent.getBundleExtra("BUNDLE")
+        labelsList = args!!.getSerializable("labellist") as ArrayList<String>
 
         createLayoutDynamically(labelsNumber);
     }
