@@ -13,7 +13,9 @@ class AllProducts : AppCompatActivity() {
     private lateinit var labelsList :ArrayList<String>;
     private var imagesList = arrayListOf(R.drawable.apple75, R.drawable.apple75,R.drawable.apple75,R.drawable.apple75,
         R.drawable.apple75, R.drawable.apple75,R.drawable.apple75,R.drawable.apple75,
-        R.drawable.apple75, R.drawable.apple75,R.drawable.apple75,R.drawable.apple75,R.drawable.apple75)
+        R.drawable.apple75, R.drawable.apple75,R.drawable.apple75)
+    private var labelsNumber = labelsList.size
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_all_products)
@@ -34,14 +36,12 @@ class AllProducts : AppCompatActivity() {
         val args = intent.getBundleExtra("BUNDLE")
         labelsList = args!!.getSerializable("labellist") as ArrayList<String>
 
-        createLayoutDynamically();
+        createLayoutDynamically(labelsNumber);
     }
-    private fun createLayoutDynamically() {
+    private fun createLayoutDynamically(buttonsNumber: Int) {
         val baseLayout = findViewById<LinearLayout>(R.id.linearLayout)
 
         val lp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
-
-        val buttonsNumber = labelsList.size;
 
         for (i in 0..buttonsNumber) {
             val layoutH2 = LinearLayout(this)
@@ -63,14 +63,10 @@ class AllProducts : AppCompatActivity() {
 
                 myButton.x = 10.0f + j*25.0f
                 myButton.y = 10.0f
-                var id_ = myButton.getId();
 
                 layoutH2.addView(myButton);
 
                 myButton.setOnClickListener {
-                  /*  Toast.makeText(this,
-                        "Button clicked index = " + id_, Toast.LENGTH_SHORT)
-                        .show();*/
                    // val toast = Toast.makeText(applicationContext, "Drukowanie etykiety dla " + labelsList.get(i*3+j) , Toast.LENGTH_SHORT)
                     val toast = Toast.makeText(applicationContext, "Drukowanie etykiety dla " + labelsList.get(0) , Toast.LENGTH_SHORT)
 
