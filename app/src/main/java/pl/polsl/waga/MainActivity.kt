@@ -41,28 +41,21 @@ import kotlin.concurrent.thread
 
 class MainActivity : AppCompatActivity() {
 
-    val REQUEST_IMAGE_CAPTURE = 1
-    var mCurrentPhotoPath: String = ""
-    private var recognizedText = ""
-    lateinit var detector: ObjectDetector
-    // private var interpreter: Interpreter? = null
-    private lateinit var foodModel: FoodModel
+    private var labelsList = arrayListOf("Jabłko", "Banan", "Karambola", "Guawa", "Kiwi","Mango", "Melon",
+        "Pomarancza", "Brzoskwinia", "Gruszka", "Persymona", "Papaja", "Sliwka", "Granat")
+
     lateinit var imageBitmap: Bitmap
     private lateinit var IsProcessing :referenceBool
     private var recognizedFruit: String= ""
     private var toPrint:String = ""
+    var isRecognized = false
 
-
-    var selectedImage: Bitmap? = null
-    lateinit var photoURI: Uri
     enum class UserPermission{
         CAMERA,
         WRITE_DATA
     }
 
-
     private var count = 0
-
     private var textureView: TextureView? = null
 
     companion object {
@@ -84,7 +77,6 @@ class MainActivity : AppCompatActivity() {
     protected var captureRequestBuilder: CaptureRequest.Builder? = null
     private var imageDimension: Size? = null
     private var imageReader: ImageReader? = null
-    private val file: File? = null
     private var mBackgroundHandler: Handler? = null
     private var mBackgroundThread: HandlerThread? = null
     private data class referenceBool (var value: Boolean)
@@ -98,12 +90,12 @@ class MainActivity : AppCompatActivity() {
         textureView = findViewById<View>(R.id.texture) as TextureView
 
 
-        foodModel = FoodModel.newInstance(this)
         val yesButton: Button = findViewById(R.id.yesButton)
         val noButton: Button = findViewById(R.id.noButton)
         val startButton: Button = findViewById(R.id.startButton)
         yesButton.setVisibility(View.GONE);
         noButton.setVisibility(View.GONE);
+
         //BUTTONS
         yesButton.setOnClickListener {
             val toast = Toast.makeText(applicationContext, "Drukowanie etykiety dla " +toPrint, Toast.LENGTH_SHORT)
@@ -121,9 +113,12 @@ class MainActivity : AppCompatActivity() {
 
 
             startButton.setText("Rozpoznaj ponownie")
-            yesButton.setVisibility(View.VISIBLE);
-            noButton.setVisibility(View.VISIBLE);
-            toPrint=recognizedFruit
+
+            if(isRecognized) {
+                yesButton.setVisibility(View.VISIBLE)
+                noButton.setVisibility(View.VISIBLE);
+                toPrint = recognizedFruit
+            }
             recognizedFruit=""
         }
 
@@ -156,7 +151,6 @@ class MainActivity : AppCompatActivity() {
                     textureView?.getBitmap(frame)
                     imageBitmap=frame
                     IsProcessing=isProcessing
-                    // decodeImage(frame,isProcessing)
                 }
             }
         }
@@ -295,7 +289,6 @@ class MainActivity : AppCompatActivity() {
             imageReader = null
         }
     }
-
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<String>,
@@ -332,29 +325,17 @@ class MainActivity : AppCompatActivity() {
 
 
 
-    /***
-     *      _           _          _
-     *     | |         | |        | |
-     *     | |     __ _| |__   ___| |___
-     *     | |    / _` | '_ \ / _ | / __|
-     *     | |___| (_| | |_) |  __| \__ \
-     *     |______\__,_|_.__/ \___|_|___/
-     *
-     *
-     */
 
+/* Decode image from bitmap with Tensorflow model*/
     private fun decodeImage(img: Bitmap, isProcessing: referenceBool){
-        //wersja 4 - owoce
 
-        val imageProcessor = ImageProcessor.Builder()
+    val imageProcessor = ImageProcessor.Builder()
             .add(ResizeOp(150, 150, ResizeOp.ResizeMethod.BILINEAR))
             .build()
 
         var tImage = TensorImage(DataType.FLOAT32)
-
-        tImage.load(img)
+        tImage.load(img) //change bitmap to TensorImage
         tImage = imageProcessor.process(tImage)
-
 
         val probabilityProcessor =
             TensorProcessor.Builder().add(NormalizeOp(0f, 255f)).build()
@@ -363,48 +344,40 @@ class MainActivity : AppCompatActivity() {
         val outputs =
             owocowyModel.process(probabilityProcessor.process(tImage.tensorBuffer))
         val outputBuffer = outputs.outputFeature0AsTensorBuffer
-        val labelsList = arrayListOf("Jabłko", "Banan", "Karambola", "Guawa", "Kiwi","Mango", "Melon",
-            "Pomarancza", "Brzoskwinia", "Gruszka", "Persymona", "Papaja", "Sliwka", "Granat")
-        /*val labelsList = arrayListOf("Jabłko czerwone","Jabłko zielone", "Morela","Awokado",
-            "Banan", "Borowka", "Kaktus", "Kantalupa", "Wisnia","Mandarynka", "Winogrono",
-            "Kiwi", "Cytryna", "Limonka", "Mango",
-      "Pomarancza", "Papaja", "Marakuja", "Brzoskiwnia", "Gruszka", "Ananas", "Sliwka", "Granat",
-        "Malina", "Truskawka", "Arbuz")*/
-        val tensorLabel = TensorLabel(labelsList, outputBuffer)
-        var tmp=0
-        var fruit =" nw co to "
-        var probability = " "
+
+
+        val tensorLabel = TensorLabel(labelsList, outputBuffer) //add labels to output
+        var tmpScore=0f
+        var fruit =""
+        var probability = ""
         for(a in tensorLabel.categoryList)
         {
-            if(a.score > 0.50 && tmp<a.score)
+            if(a.score > 0.9 && tmpScore<a.score)
             {
                 fruit=a.label
+                tmpScore = a.score
                 probability = a.score.toString()
             }
-
         }
         recognizedFruit = fruit
-        //imageLabel.text =  "Owoc : "+ owocek + "\nPrawdopodobieństwo: " + probability
-        imageLabel.text =  "Czy twój produkt to:\n"+ recognizedFruit + "\nPrawdopodobieństwo: " + probability
-
+    if(fruit.equals("")) {
+        imageLabel.text = "Nie rozpoznano obiektu"
+        isRecognized = false
+    }
+    else {
+        imageLabel.text =
+            "Czy twój produkt to:\n" + recognizedFruit + "\nPrawdopodobieństwo: " + probability
+        isRecognized = true
+    }
         isProcessing.value = false
     }
 
     private fun clearLabel(){
-
         this.imageLabel.text = ""
     }
-    /***
-     *      _____                    _         _
-     *     |  __ \                  (_)       (_)
-     *     | |__) ___ _ __ _ __ ___  _ ___ ___ _  ___  _ __  ___
-     *     |  ___/ _ | '__| '_ ` _ \| / __/ __| |/ _ \| '_ \/ __|
-     *     | |  |  __| |  | | | | | | \__ \__ | | (_) | | | \__ \
-     *     |_|   \___|_|  |_| |_| |_|_|___|___|_|\___/|_| |_|___/
-     *
-     *
-     */
 
+
+//Permisions
     private fun checkAndRequestPermissionsFor(items: ArrayList<UserPermission>){
 
         var itemsRequirePermission = ArrayList<UserPermission>()
