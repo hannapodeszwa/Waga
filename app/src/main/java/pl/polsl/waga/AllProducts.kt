@@ -14,7 +14,7 @@ class AllProducts : AppCompatActivity() {
     private var imagesList = arrayListOf(R.drawable.apple75, R.drawable.apple75,R.drawable.apple75,R.drawable.apple75,
         R.drawable.apple75, R.drawable.apple75,R.drawable.apple75,R.drawable.apple75,
         R.drawable.apple75, R.drawable.apple75,R.drawable.apple75)
-    private var labelsNumber = labelsList.size
+    private  var labelsNumber = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,13 +28,12 @@ class AllProducts : AppCompatActivity() {
 
         var imageIdList = arrayOf<Int>(
             R.drawable.apple75,
-
             )
-
 
         val intent = intent;
         val args = intent.getBundleExtra("BUNDLE")
         labelsList = args!!.getSerializable("labellist") as ArrayList<String>
+        labelsNumber = labelsList.size
 
         createLayoutDynamically(labelsNumber);
     }
@@ -56,9 +55,7 @@ class AllProducts : AppCompatActivity() {
 
                 var myButton: ImageButton = ImageButton(this);
 
-               // myButton.setImageResource(R.drawable.apple75);
-                //myButton.setImageResource(imagesList.get((i*3)+j));
-                myButton.setImageResource(imagesList.get(0));
+                myButton.setImageResource(imagesList.get((i*3)+j));
                 myButton.setId(i*3 + j);
 
                 myButton.x = 10.0f + j*25.0f
@@ -67,13 +64,10 @@ class AllProducts : AppCompatActivity() {
                 layoutH2.addView(myButton);
 
                 myButton.setOnClickListener {
-                   // val toast = Toast.makeText(applicationContext, "Drukowanie etykiety dla " + labelsList.get(i*3+j) , Toast.LENGTH_SHORT)
-                    val toast = Toast.makeText(applicationContext, "Drukowanie etykiety dla " + labelsList.get(0) , Toast.LENGTH_SHORT)
-
+                    val toast = Toast.makeText(applicationContext, "Drukowanie etykiety dla " + labelsList.get(i*3+j) , Toast.LENGTH_SHORT)
                     toast.show()
                     val myIntent = Intent(this, MainActivity::class.java)
                     startActivity(myIntent)
-
                 }
             }
         }
