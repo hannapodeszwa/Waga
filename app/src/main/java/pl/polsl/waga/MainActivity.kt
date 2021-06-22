@@ -41,8 +41,10 @@ import kotlin.concurrent.thread
 
 class MainActivity : AppCompatActivity() {
 
-    private var labelsList = arrayListOf("Jabłko", "Banan", "Karambola", "Guawa", "Kiwi","Mango", "Melon",
-        "Pomarancza", "Brzoskwinia", "Gruszka", "Persymona", "Papaja", "Sliwka", "Granat")
+//    private var labelsList = arrayListOf("Jabłko", "Banan", "Karambola", "Guawa", "Kiwi","Mango", "Melon",
+//        "Pomarancza", "Brzoskwinia", "Gruszka", "Persymona", "Papaja", "Sliwka", "Granat")//
+        private var labelsList = arrayListOf("Burak", "Kapusta", "Marchewka", "Ogórek", "Cebula czerwona","Cebula biała", "Pietruszka",
+        "Papryka czerwona", "Ziemniak", "Pomidor")
 
     lateinit var imageBitmap: Bitmap
     private lateinit var IsProcessing :referenceBool
@@ -333,7 +335,7 @@ class MainActivity : AppCompatActivity() {
     private fun decodeImage(img: Bitmap, isProcessing: referenceBool){
 
     val imageProcessor = ImageProcessor.Builder()
-            .add(ResizeOp(150, 150, ResizeOp.ResizeMethod.BILINEAR))
+            .add(ResizeOp(100, 100, ResizeOp.ResizeMethod.BILINEAR))
             .build()
 
         var tImage = TensorImage(DataType.FLOAT32)

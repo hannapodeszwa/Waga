@@ -14,7 +14,6 @@ class AllProducts : AppCompatActivity() {
     private var imagesList = arrayListOf(R.drawable.apple75, R.drawable.apple75,R.drawable.apple75,R.drawable.apple75,
         R.drawable.apple75, R.drawable.apple75,R.drawable.apple75,R.drawable.apple75,
         R.drawable.apple75, R.drawable.apple75,R.drawable.apple75,R.drawable.apple75,R.drawable.apple75)
-    private var labelsNumber = labelsList.size
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_all_products)
@@ -25,16 +24,24 @@ class AllProducts : AppCompatActivity() {
             startActivity(myIntent)
         }
 
+        var imageIdList = arrayOf<Int>(
+            R.drawable.apple75,
+
+            )
+
+
         val intent = intent;
         val args = intent.getBundleExtra("BUNDLE")
         labelsList = args!!.getSerializable("labellist") as ArrayList<String>
 
-        createLayoutDynamically(labelsNumber);
+        createLayoutDynamically();
     }
-    private fun createLayoutDynamically(buttonsNumber: Int) {
+    private fun createLayoutDynamically() {
         val baseLayout = findViewById<LinearLayout>(R.id.linearLayout)
 
         val lp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+
+        val buttonsNumber = labelsList.size;
 
         for (i in 0..buttonsNumber) {
             val layoutH2 = LinearLayout(this)
