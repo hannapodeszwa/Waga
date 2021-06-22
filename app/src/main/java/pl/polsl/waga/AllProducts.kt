@@ -11,10 +11,10 @@ import androidx.appcompat.app.AppCompatActivity
 
 class AllProducts : AppCompatActivity() {
     private lateinit var labelsList :ArrayList<String>;
-    private var imagesList = arrayListOf(R.drawable.apple75, R.drawable.apple75,R.drawable.apple75,R.drawable.apple75,
-        R.drawable.apple75, R.drawable.apple75,R.drawable.apple75,R.drawable.apple75,
-        R.drawable.apple75, R.drawable.apple75,R.drawable.apple75)
-    private var labelsNumber = labelsList.size
+    private var imagesList = arrayListOf(R.drawable.beetroot, R.drawable.cabbage,R.drawable.carrot,R.drawable.cucumber,
+        R.drawable.onion_red, R.drawable.onion_white,R.drawable.parsley,R.drawable.pepper_red,
+        R.drawable.potatoe, R.drawable.tomatoe)
+    private var labelsNumber = 0;
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,16 +26,11 @@ class AllProducts : AppCompatActivity() {
             startActivity(myIntent)
         }
 
-        var imageIdList = arrayOf<Int>(
-            R.drawable.apple75,
-
-            )
-
 
         val intent = intent;
         val args = intent.getBundleExtra("BUNDLE")
         labelsList = args!!.getSerializable("labellist") as ArrayList<String>
-
+        labelsNumber = labelsList.size;
         createLayoutDynamically(labelsNumber);
     }
     private fun createLayoutDynamically(buttonsNumber: Int) {
