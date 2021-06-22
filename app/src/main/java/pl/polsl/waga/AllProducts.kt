@@ -10,6 +10,9 @@ import androidx.appcompat.app.AppCompatActivity
 
 
 class AllProducts : AppCompatActivity() {
+    private var labelsList = arrayListOf("Jabłko", "Banan", "Karambola", "Guawa", "Kiwi","Mango", "Melon",
+        "Pomarancza", "Brzoskwinia", "Gruszka", "Persymona", "Papaja", "Sliwka", "Granat")
+    private var labelsNumber = labelsList.size
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_all_products)
@@ -17,46 +20,43 @@ class AllProducts : AppCompatActivity() {
 
         val exitButton: Button = findViewById(R.id.exitButton)
         exitButton.setOnClickListener {
-            //createLayoutDynamically(10);
             val myIntent = Intent(this, MainActivity::class.java)
             startActivity(myIntent)
         }
-        /////////////////////////////
-        createLayoutDynamically(30);
-        ///////////////////////////
+
+        createLayoutDynamically(labelsNumber);
     }
-    private fun createLayoutDynamically(n: Int) {
-       // val baseLayout = findViewById<TableLayout>(R.id.table)
+    private fun createLayoutDynamically(buttonsNumber: Int) {
         val baseLayout = findViewById<LinearLayout>(R.id.linearLayout)
 
         val lp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
 
-        for (i in 0..n) {
+        for (i in 0..buttonsNumber) {
             val layoutH2 = LinearLayout(this)
             baseLayout.addView(layoutH2)
 
             for(j in 0..2)
             {
+                if(i*3+j == buttonsNumber)
+                {
+                    return
+                }
+
                 var myButton: ImageButton = ImageButton(this);
 
                 myButton.setImageResource(R.drawable.apple75);
-                //myButton.setText(i.toString()+"Button :"+j);
                 myButton.setId(i*3 + j);
 
-               // myButton.width = 60
-                //myButton.height =50
-
                 myButton.x = 10.0f + j*25.0f
-                myButton.y = 10.0f //+ i*25.0f
+                myButton.y = 10.0f
                 var id_ = myButton.getId();
 
                 layoutH2.addView(myButton);
-                //baseLayout.addView(myButton);
 
                 myButton.setOnClickListener {
-                    Toast.makeText(this,
+                  /*  Toast.makeText(this,
                         "Button clicked index = " + id_, Toast.LENGTH_SHORT)
-                        .show();
+                        .show();*/
                     val toast = Toast.makeText(applicationContext, "Drukowanie etykiety dla Jabłko" , Toast.LENGTH_SHORT)
                     toast.show()
                     val myIntent = Intent(this, MainActivity::class.java)
