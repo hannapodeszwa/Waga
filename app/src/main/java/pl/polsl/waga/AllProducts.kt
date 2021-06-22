@@ -12,6 +12,9 @@ import androidx.appcompat.app.AppCompatActivity
 class AllProducts : AppCompatActivity() {
     private var labelsList = arrayListOf("Jabłko", "Banan", "Karambola", "Guawa", "Kiwi","Mango", "Melon",
         "Pomarancza", "Brzoskwinia", "Gruszka", "Persymona", "Papaja", "Sliwka", "Granat")
+    private var imagesList = arrayListOf(R.drawable.apple75, R.drawable.apple75,R.drawable.apple75,R.drawable.apple75,
+        R.drawable.apple75, R.drawable.apple75,R.drawable.apple75,R.drawable.apple75,
+        R.drawable.apple75, R.drawable.apple75,R.drawable.apple75,R.drawable.apple75,R.drawable.apple75)
     private var labelsNumber = labelsList.size
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,7 +47,9 @@ class AllProducts : AppCompatActivity() {
 
                 var myButton: ImageButton = ImageButton(this);
 
-                myButton.setImageResource(R.drawable.apple75);
+               // myButton.setImageResource(R.drawable.apple75);
+                //myButton.setImageResource(imagesList.get((i*3)+j));
+                myButton.setImageResource(imagesList.get(0));
                 myButton.setId(i*3 + j);
 
                 myButton.x = 10.0f + j*25.0f
@@ -57,7 +62,9 @@ class AllProducts : AppCompatActivity() {
                   /*  Toast.makeText(this,
                         "Button clicked index = " + id_, Toast.LENGTH_SHORT)
                         .show();*/
-                    val toast = Toast.makeText(applicationContext, "Drukowanie etykiety dla Jabłko" , Toast.LENGTH_SHORT)
+                   // val toast = Toast.makeText(applicationContext, "Drukowanie etykiety dla " + labelsList.get(i*3+j) , Toast.LENGTH_SHORT)
+                    val toast = Toast.makeText(applicationContext, "Drukowanie etykiety dla " + labelsList.get(0) , Toast.LENGTH_SHORT)
+
                     toast.show()
                     val myIntent = Intent(this, MainActivity::class.java)
                     startActivity(myIntent)
