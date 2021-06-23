@@ -11,9 +11,10 @@ import androidx.appcompat.app.AppCompatActivity
 
 class AllProducts : AppCompatActivity() {
     private lateinit var labelsList :ArrayList<String>
-    private var imagesList = arrayListOf(R.drawable.beetroot, R.drawable.cabbage,R.drawable.carrot,R.drawable.cucumber,
-        R.drawable.onion_red, R.drawable.onion_white,R.drawable.parsley,R.drawable.pepper_red,
-        R.drawable.potatoe, R.drawable.tomatoe)
+    private var imagesList = arrayListOf(R.drawable.jablko, R.drawable.banan, R.drawable.burak, R.drawable.kapusta,
+        R.drawable.karambola, R.drawable.marchewka, R.drawable.ogorek, R.drawable.guawa, R.drawable.kiwi,
+        R.drawable.mango, R.drawable.melon, R.drawable.cebula_czerwona, R.drawable.cebula_biala, R.drawable.pomarancza, R.drawable.pietruszka,
+        R.drawable.brzoskwinia, R.drawable.gruszka, R.drawable.papryka_czerwona, R.drawable.persymona, R.drawable.papaja, R.drawable.sliwka, R.drawable.granat, R.drawable.ziemniak, R.drawable.pomidor)
     private var labelsNumber = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {

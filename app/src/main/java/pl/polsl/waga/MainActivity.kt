@@ -38,10 +38,11 @@ import kotlin.concurrent.thread
 
 class MainActivity : AppCompatActivity() {
 
-//    private var labelsList = arrayListOf("Jabłko", "Banan", "Karambola", "Guawa", "Kiwi","Mango", "Melon",
-//        "Pomarancza", "Brzoskwinia", "Gruszka", "Persymona", "Papaja", "Sliwka", "Granat")//
-        private var labelsList = arrayListOf("Burak", "Kapusta", "Marchewka", "Ogórek", "Cebula czerwona","Cebula biała", "Pietruszka",
-        "Papryka czerwona", "Ziemniak", "Pomidor")
+//    private var labelsList = arrayListOf(
+//        )//
+        private var labelsList = arrayListOf("Jabłko", "Banan", "Burak", "Kapusta", "Karambola", "Marchewka", "Ogórek", "Guawa",
+    "Kiwi", "Mango", "Melon", "Cebula czerwona","Cebula biała", "Pomarancza", "Pietruszka", "Brzoskwinia", "Gruszka", "Papryka czerwona",
+    "Persymona", "Papaja", "Sliwka", "Granat", "Ziemniak", "Pomidor")
 
     lateinit var imageBitmap: Bitmap
     private lateinit var IsProcessing :referenceBool
