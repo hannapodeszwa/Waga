@@ -355,7 +355,7 @@ class MainActivity : AppCompatActivity() {
         var probability = ""
         for(a in tensorLabel.categoryList)
         {
-            if(a.score > 0.9 && tmpScore<a.score)
+            if(a.score > 0.5 && tmpScore<a.score)
             {
                 fruit=a.label
                 tmpScore = a.score
