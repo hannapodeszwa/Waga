@@ -30,7 +30,7 @@ import org.tensorflow.lite.support.image.ImageProcessor
 import org.tensorflow.lite.support.image.TensorImage
 import org.tensorflow.lite.support.image.ops.ResizeOp
 import org.tensorflow.lite.support.label.TensorLabel
-import pl.polsl.waga.ml.Warzywa
+import pl.polsl.waga.ml.Model
 import java.io.*
 import java.util.*
 import kotlin.concurrent.thread
@@ -342,7 +342,7 @@ class MainActivity : AppCompatActivity() {
 
         val probabilityProcessor =
             TensorProcessor.Builder().add(NormalizeOp(0f, 255f)).build()
-        val myModel = Warzywa.newInstance(this)
+        val myModel = Model.newInstance(this)
 
         val outputs =
             myModel.process(probabilityProcessor.process(tImage.tensorBuffer))
